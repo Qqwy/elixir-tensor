@@ -8,6 +8,6 @@ defmodule TensorTest do
 
   test "basic construction" do
     matrix = %Tensor{contents: %{0 => %{0 => 1, 1 => 2}, 1 => %{0 => 3, 1 => 4}}, dimensions: [2, 2], identity: nil}
-    assert IO.inspect(matrix) == "#Matrix-(2x2)%{0 => %{0 => 1, 1 => 2}, 1 => %{0 => 3, 1 => 4}}"
+    assert Inspect.inspect(matrix, []) == "#Matrix-(2x2)%{0 => %{0 => 1, 1 => 2}, 1 => %{0 => 3, 1 => 4}}"
   end
 end

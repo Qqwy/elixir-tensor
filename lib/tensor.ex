@@ -19,6 +19,13 @@ defmodule Tensor do
   def matrix?(%Tensor{dimensions: [_,_]}), do: true
   def matrix?(%Tensor{}), do: false
 
+  def dimensions(tensor = %Tensor{}) do 
+    tensor.dimensions
+  end
+
+  def identity(tensor = %Tensor{}) do 
+    tensor.identity
+  end
 
 
   @behaviour Access
@@ -41,34 +48,52 @@ defmodule Tensor do
     end
   end
 
-  def pop(tensor, key) do
+  def pop(tensor, key, default \\ nil) do
     raise "TODO: Implement Access.pop"
   end
 
   def get_and_update(tensor, key, fun) do
-    raise "TODO: Implement Access.get_and_update"
+    # TODO: Raise if key not numeric.
+    # TODO: Raise if key outside of dimension bounds.
+    if key < 0 || key >= hd(tensor.dimensions) do
+      raise "invalid key while doing get_and_update on Tensor."
+    end
+    {result, contents} = 
+      if vector? tensor do
+        {result, contents} = Map.get_and_update(tensor.contents, key, fun)
+      else
+        {:ok, ll_tensor} = fetch(tensor, key)
+        {result, ll_tensor2} = fun.(ll_tensor)
+        {result, %{tensor.contents | key => ll_tensor2.contents}}
+      end
+    {result, %Tensor{tensor | contents: contents}}
   end
 
 
 
 
-  def new(list_of_values, identity \\ fn _ -> nil end, dimensions \\ nil) do
-    dimensions = dimensions || length(list_of_values)
-    contents = chunk_list_in_dimensions(list_of_values, dimensions)
-    Tensor.new(contents: contents, identity: identity, dimensions: dimensions)
+  def new(nested_list_of_values, dimensions \\ nil, identity \\ fn _ -> nil end) do
+    dimensions = dimensions || [length(nested_list_of_values)]
+    # TODO: Dimension inference.
+    contents = 
+      nested_list_of_values
+      |> nested_list_to_nested_map
+    %Tensor{contents: contents, identity: identity, dimensions: dimensions}
   end
+
+
 
   # At the lowest level, do not apply chunking.
   # _do_ take only at most dimension.
-  def chunk_list_in_dimensions(list, [h]) when is_integer(h) do
-    Enum.take(list, h)
-  end
+  # def chunk_list_in_dimensions(list, [h]) when is_integer(h) do
+  #   Enum.take(list, h)
+  # end
 
-  def chunk_list_in_dimensions(list, [h | t]) when is_integer(h) do
-    list
-    |> Enum.chunk(h)
-    |> Enum.map(&chunk_list_in_dimensions(&1, t))
-  end
+  # def chunk_list_in_dimensions(list, [h | t]) when is_integer(h) do
+  #   list
+  #   |> Enum.chunk(h)
+  #   |> Enum.map(&chunk_list_in_dimensions(&1, t))
+  # end
 
   # def nested_list_to_tuple_map(list, map, tuple) do
   #   list
@@ -98,12 +123,12 @@ defmodule Tensor do
   #   end)
   # end
 
-  def from_list(list) do
+  defp nested_list_to_nested_map(list) do
     list
     |> Enum.with_index
     |> Enum.reduce(%{}, fn 
       {sublist, index}, map when is_list(sublist) ->
-        Map.put(map, index, from_list(sublist))
+        Map.put(map, index, nested_list_to_nested_map(sublist))
       {item, index}, map -> 
         Map.put(map, index, item)
     end)

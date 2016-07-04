@@ -134,4 +134,16 @@ defmodule Tensor do
     end)
   end
 
+  def to_list(tensor) do
+    do_to_list(tensor.contents, tensor.dimensions)
+  end
+
+  defp do_to_list(tensor_contents, [dimension]) do
+    for x <- 0..dimension-1, do: tensor_contents[x]
+  end
+
+  defp do_to_list(tensor_contents, [dimension | dimensions]) do
+    for x <- 0..dimension-1, do: do_to_list(tensor_contents[x], dimensions)
+  end
+
 end

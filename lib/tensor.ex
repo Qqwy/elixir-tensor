@@ -14,6 +14,18 @@ defmodule Tensor do
     end
   end
 
+  defmodule ArithmeticError do
+    defexception message: "This arithmetic operation is not allowed when working with Vectors/Matrices/Tensors."
+  end
+
+  defmodule AccessError do
+    defexception [:message]
+
+    def exception(key) do
+      %AccessError{message: "The requested key `#{key}` could not be found inside this Vector/Matrix/Tensor. It probably is out of range"}
+    end
+  end
+
   @opaque tensor :: %Tensor{}
 
   @doc """
@@ -98,7 +110,7 @@ defmodule Tensor do
     # TODO: Raise if key outside of dimension bounds.
     # TODO: Ensure that identity values are not stored.
     if key < 0 || key >= hd(tensor.dimensions) do
-      raise "invalid key #{key} while doing get_and_update on Tensor."
+      raise Tensor.AccessError, key
     end
     {result, contents} = 
       if vector? tensor do

@@ -226,7 +226,7 @@ defmodule Matrix do
 
 
   def mult(a = %Tensor{dimensions: [_,_]}, b = %Tensor{dimensions: [_,_]}) do
-    raise "Cannot compute dot product if the width of matrix `a` does not match the height of matrix `b`!"
+    raise Tensor.ArithmeticError, "Cannot compute dot product if the width of matrix `a` does not match the height of matrix `b`!"
   end
 
 end

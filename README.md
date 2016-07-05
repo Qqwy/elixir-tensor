@@ -28,25 +28,24 @@ Vectors and Matrixes are also just Tensors, but there are many simple functions 
 
 Higher-dimensional Tensors can be created, but many simple functions are only useful on Vectors and Matrixes. Therefore, these have their own modules. 
 
-Only the values that differ from the __identity__ (defaults to `nil`) are actually stored in the Vector/Matrix/Tensor. This allows for smaller data sizes.
+## Sparcity
+
+The Vectors/Matrices/Tensors are stored in a *sparse* way. 
+Only the values that differ from the __identity__ (defaults to `nil`) are actually stored in the Vector/Matrix/Tensor. 
+
+This allows for smaller data sizes, as well as faster operations when peforming on, for instance, diagonal matrices.
 
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
 
-  1. Add `tensor` to your list of dependencies in `mix.exs`:
+    Add `tensor` to your list of dependencies in `mix.exs`:
 
     ```elixir
     def deps do
-      [{:tensor, "~> 0.1.0"}]
-    end
-    ```
-
-  2. Ensure `tensor` is started before your application:
-
-    ```elixir
-    def application do
-      [applications: [:tensor]]
+      [
+        {:tensor, "~> 0.1.0"}
+      ]
     end
     ```
 

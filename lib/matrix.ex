@@ -91,6 +91,9 @@ defmodule Matrix do
     matrix == matrix |> transpose
   end
 
+  def square?(matrix = %Tensor{dimensions: [s,s]}), do: true
+  def square?(matrix = %Tensor{dimensions: [_,_]}), do: false
+
   def symmetric?(matrix = %Tensor{dimensions: [_,_]}), do: false
 
   def transpose(matrix = %Tensor{dimensions: [w,h]}) do
@@ -154,6 +157,15 @@ defmodule Matrix do
   """
   def column(matrix, n) do
     transpose(matrix)[n]
+  end
+
+  @doc """
+  Returns the values in the main diagonal (top left to bottom right) as list
+  """
+  def main_diagonal(matrix = %Tensor{dimensions: [h,w]}) do
+    for i <- 0..min(w,h)-1 do
+      matrix[i][i]
+    end
   end
 
   def flip_vertical(matrix = %Tensor{dimensions: [w, h]}) do
@@ -227,6 +239,19 @@ defmodule Matrix do
 
   def mult(a = %Tensor{dimensions: [_,_]}, b = %Tensor{dimensions: [_,_]}) do
     raise Tensor.ArithmeticError, "Cannot compute dot product if the width of matrix `a` does not match the height of matrix `b`!"
+  end
+
+  @doc """
+  Returns the sum of the main diagonal of a square matrix.
+
+  Note that this method will fail when called with a non-square matrix
+  """
+  def trace(matrix = %Tensor{dimensions: [n,n]}) do
+    Enum.sum(main_diagonal(matrix))
+  end
+
+  def trace(matrix = %Tensor{dimensions: [_,_]}) do
+    raise Tensor.ArithmeticError, "Matrix.trace/1 is not defined for non-square matrices!"
   end
 
 end

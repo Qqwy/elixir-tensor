@@ -22,4 +22,16 @@ defmodule MatrixTest do
     assert matrix |> Matrix.transpose |> Matrix.transpose == matrix
 
   end
+
+  test "Matrix.dot_product" do 
+    m1 = Tensor.new([[2,3,4],[1,0,0]], [2,3])
+    m2 = Tensor.new([[0,1000],[1,100],[0,10]], [3,2])
+    assert Matrix.dot_product(m1, m2) |> inspect == """
+    #Matrix-(2×2)
+    ┌                 ┐
+    │       3,    2340│
+    │       0,    1000│
+    └                 ┘
+    """
+  end
 end

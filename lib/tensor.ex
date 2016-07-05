@@ -14,6 +14,8 @@ defmodule Tensor do
     end
   end
 
+  @opaque tensor :: %Tensor{}
+
   @doc """
   Returs true if the tensor is a 1-order Tensor, which is also known as a Vector.
   """
@@ -94,6 +96,7 @@ defmodule Tensor do
   def get_and_update(tensor, key, fun) do
     # TODO: Raise if key not numeric.
     # TODO: Raise if key outside of dimension bounds.
+    # TODO: Ensure that identity values are not stored.
     if key < 0 || key >= hd(tensor.dimensions) do
       raise "invalid key #{key} while doing get_and_update on Tensor."
     end
@@ -114,6 +117,8 @@ defmodule Tensor do
   Creates a new Tensor from a list of lists (of lists of lists of ...).
   The second argument should be the dimensions the tensor should become.
   The optional third argument is an identity value for the tensor, that all non-set values will default to.
+
+  TODO: Solve this, maybe find a nicer way to create tensors.
   """
   def new(nested_list_of_values, dimensions \\ nil, identity \\ nil) do
     dimensions = dimensions || [length(nested_list_of_values)]
@@ -124,47 +129,6 @@ defmodule Tensor do
     %Tensor{contents: contents, identity: identity, dimensions: dimensions}
   end
 
-
-
-  # At the lowest level, do not apply chunking.
-  # _do_ take only at most dimension.
-  # def chunk_list_in_dimensions(list, [h]) when is_integer(h) do
-  #   Enum.take(list, h)
-  # end
-
-  # def chunk_list_in_dimensions(list, [h | t]) when is_integer(h) do
-  #   list
-  #   |> Enum.chunk(h)
-  #   |> Enum.map(&chunk_list_in_dimensions(&1, t))
-  # end
-
-  # def nested_list_to_tuple_map(list, map, tuple) do
-  #   list
-  #   |> Enum.map do
-
-  #   end
-  # end
-
-  # Thank you, Ben Wilson!
-  # def from_list(list) do
-  #   {_, matrix} = do_from_list(list, [], %{})
-  #   matrix
-  # end
-
-  # defp do_from_list(list, indices, matrix) do
-  #   Enum.reduce(list, {0, matrix}, fn
-  #     sublist, {idx, matrix} when is_list(sublist) ->
-  #       {_sublist_idx, map} = do_from_list(sublist, [idx | indices], matrix)
-  #       {idx + 1, map}
-  #     item, {idx, matrix} ->
-  #       coordinates =
-  #         [idx | indices]
-  #         |> Enum.reverse
-  #         |> List.to_tuple
-
-  #       {idx + 1, Map.put(matrix, coordinates, item)}
-  #   end)
-  # end
 
   defp nested_list_to_nested_map(list) do
     list
@@ -211,6 +175,33 @@ defmodule Tensor do
       dimensions: [1|tensor.dimensions], 
       contents: %{0 => tensor.contents}
     }
+  end
+
+  @doc """
+  Maps `fun` over all values in the Tensor.
+
+  `fun` gets the current value as input, and should return the new value to use.
+
+  It is important that `fun` is a pure function, as internally it will only be mapped over all values
+  that are non-empty, and once over the identity of the tensor.
+  """
+  @spec map(tensor, (any -> any)) :: tensor
+  def map(tensor, fun) do
+    new_identity = fun.(tensor.identity)
+    new_contents = do_map(tensor.contents, tensor.dimensions, fun)
+    %Tensor{tensor | identity: new_identity, contents: new_contents}
+  end
+
+  def do_map(tensor_contents, [dimension], fun) do
+    for {k,v} <- tensor_contents, into: %{} do
+      {k, fun.(v)}
+    end
+  end
+
+  def do_map(tensor_contents, [dimension|dimensions], fun) do
+    for {k,v} <- tensor_contents, into: %{} do
+      {k, do_map(v, dimensions, fun)}
+    end
   end
 
 end

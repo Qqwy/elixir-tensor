@@ -69,6 +69,15 @@ defmodule Matrix do
     end)
   end
 
+  @doc """ 
+  True if the matrix is square and the same as its transpose.
+  """
+  def symmetric?(matrix = %Tensor{dimensions: [s,s]}) do
+    matrix == matrix |> transpose
+  end
+
+  def symmetric?(matrix = %Tensor{dimensions: [_,_]}), do: false
+
   def transpose(matrix = %Tensor{dimensions: [w,h]}) do
     new_contents = Enum.reduce(matrix.contents, %{}, fn {row_key, row_map}, new_row_map -> 
       Enum.reduce(row_map, new_row_map, fn {col_key, value}, new_row_map ->
@@ -95,5 +104,52 @@ defmodule Matrix do
     |> Matrix.transpose
   end
 
+  def rows(matrix = %Tensor{dimensions: [w,h]}) do
+    for i <- 0..h-1 do
+      matrix[i]
+    end
+  end
+
+  def columns(matrix = %Tensor{dimensions: [_,_]}) do
+    matrix
+    |> transpose
+    |> rows
+  end
+
+  # Scalar addition
+  def add(matrix, num) when is_number(num) do 
+    Tensor.map(matrix, fn val -> val + num end)
+  end
+
+  # Scalar multiplication
+  def mult(matrix, num) when is_number(num) do 
+    Tensor.map(matrix, fn val -> val * num end)
+  end
+
+  @doc """
+  Calculates the Matrix Multiplication of `a` * `b`.
+
+  This will only work as long as the height of `a` is the same as the width of `b`.
+
+  This operation internally builds up a list-of-lists, and finally transforms that back to a matrix.
+  """
+  # TODO: What to do with identity?
+  def dot_product(a = %Tensor{dimensions: [m,n]}, b = %Tensor{dimensions: [n,p]}) do
+    b_t = transpose(b)
+    list_of_lists = 
+      for r <- (0..m-1) do
+        for c <- (0..p-1) do
+          Vector.dot_product(a[r], b_t[c])
+        end
+      end
+    IO.inspect(list_of_lists)
+
+    Tensor.new(list_of_lists, [m, p])
+  end
+
+
+  def dot_product(a = %Tensor{dimensions: [_,_]}, b = %Tensor{dimensions: [_,_]}) do
+    raise "Cannot compute dot product if the height of matrix `a` does not match the width of matrix `b`!"
+  end
 
 end

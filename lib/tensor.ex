@@ -225,23 +225,20 @@ defmodule Tensor do
     def into(original ) do
       {original, fn
         # Building a higher-order tensor from lower-order tensors.
-        tensor = %Tensor{dimensions: dimensions = [cur_dimension, lower_dimensions]}, 
-        {:cont, x = %Tensor{dimensions: x_dimensions}} 
-        when length(dimensions) == length(x_dimensions)+1 -> 
-          IO.inspect tensor
-          IO.inspect x
-          IO.inspect dimensions
-          new_dimensions = [cur_dimension+1, lower_dimensions]
-          # new_contents = Map.put_new(tensor.contents, cur_dimension, x)
-          IO.inspect new_dimensions
-          IO.inspect tensor.contents
+        tensor = %Tensor{dimensions: dimensions = [cur_dimension| lower_dimensions]}, 
+        {:cont, elem = %Tensor{dimensions: elem_dimensions}} 
+        when lower_dimensions == elem_dimensions -> 
+          IO.inspect lower_dimensions
+          IO.inspect elem_dimensions
+          new_dimensions = [cur_dimension+1| lower_dimensions]
+          # new_contents = Map.put_new(tensor.contents, cur_dimension, elem)
           # IO.inspect new_contents
           new_tensor = %Tensor{tensor | dimensions: new_dimensions, contents: tensor.contents}
-          put_in new_tensor, [cur_dimension], x
+          put_in new_tensor, [cur_dimension], elem
         # Inserting values directly into a Vector
-        tensor = %Tensor{dimensions: [length]}, {:cont, x} -> 
+        tensor = %Tensor{dimensions: [length]}, {:cont, elem} -> 
           new_length = length+1
-          new_contents = put_in(tensor.contents, [length], x)
+          new_contents = put_in(tensor.contents, [length], elem)
           %Tensor{tensor | dimensions: [new_length], contents: new_contents}
         tensor,  :done -> tensor
         _tensor, :halt -> :ok

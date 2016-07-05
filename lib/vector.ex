@@ -33,6 +33,14 @@ defmodule Vector do
     Tensor.new(list, [length(list)], identity)
   end
 
+  def reverse(vector = %Tensor{dimensions: [l]}) do
+    new_contents =
+      for {i, v} <- vector.contents, into: %{} do
+        {l-1 - i, v}
+      end
+    %Tensor{vector | contents: new_contents}
+  end
+
   def dot_product(a = %Tensor{dimensions: [l]}, b = %Tensor{dimensions: [l]}) do
     products = 
       for i <- 0..(l-1) do

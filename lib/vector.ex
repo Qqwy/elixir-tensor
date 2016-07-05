@@ -7,7 +7,17 @@ defmodule Vector do
     end
   end
 
-  def new(length, identity \\ nil) do
+  def new() do
+    Tensor.new([], [0], 0)
+  end
+
+  def new(length_or_list, identity \\ 0)
+
+  def new(list, identity) when is_list(list) do
+    Tensor.new(list, [length(list)], identity)
+  end
+
+  def new(length, identity) when is_number(length) do
     Tensor.new([], [length], identity)
   end
 
@@ -16,13 +26,11 @@ defmodule Vector do
   end
 
   def to_list(vector) do
-    for i <- (0..Vector.length(vector)-1) do
-      vector[i]
-    end
+    Tensor.to_list(vector)
   end
 
-  def from_list(list, identity \\ nil) do
-    Tensor.new(list)
+  def from_list(list, identity \\ 0) do
+    Tensor.new(list, [length(list)], identity)
   end
 
   def dot_product(a = %Tensor{dimensions: [l]}, b = %Tensor{dimensions: [l]}) do
@@ -34,5 +42,5 @@ defmodule Vector do
   end
   def dot_product(a, b), do: raise "Two Vectors have to have the same length to be able to compute the dot product"
 
-  
+
 end

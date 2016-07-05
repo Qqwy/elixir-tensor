@@ -204,4 +204,42 @@ defmodule Tensor do
     end
   end
 
+  defimpl Enumerable do
+    def count(tensor), do: {:ok, Enum.sum(tensor.dimensions)}
+  
+    def member?(tensor, element), do: {:error, __MODULE__}
+
+    def reduce(tensor, acc, fun) do
+      tensor
+      |> Tensor.to_list
+      |> do_reduce(acc, fun)
+    end
+  
+    defp do_reduce(_,       {:halt, acc}, _fun),   do: {:halted, acc}
+    defp do_reduce(list,    {:suspend, acc}, fun), do: {:suspended, acc, &do_reduce(list, &1, fun)}
+    defp do_reduce([],      {:cont, acc}, _fun),   do: {:done, acc}
+    defp do_reduce([h | t], {:cont, acc}, fun),    do: do_reduce(t, fun.(h, acc), fun)
+  end
+
+  defimpl Collectable do
+    def into(original ) do
+      {original, fn
+        # Building a higher-order tensor from lower-order tensors.
+        tensor = %Tensor{dimensions: dimensions = [cur_dimension, lower_dimensions]}, 
+        {:cont, x = %Tensor{dimensions: x_dimensions}} 
+        when length(dimensions) == length(x_dimensions)+1 -> 
+          new_dimensions = [cur_dimension+1, lower_dimensions]
+          new_contents = put_in(tensor.contents, [cur_dimension], x)
+          %Tensor{tensor | dimensions: new_dimensions, contents: new_contents}
+        # Inserting values directly into a Vector
+        tensor = %Tensor{dimensions: [length]}, {:cont, x} -> 
+          new_length = length+1
+          new_contents = put_in(tensor.contents, [length], x)
+          %Tensor{tensor | dimensions: [new_length], contents: new_contents}
+        tensor,  :done -> tensor
+        _tensor, :halt -> :ok
+      end}
+    end
+  end
+
 end

@@ -27,7 +27,7 @@ defmodule Matrix do
     end
   end
 
-  def new(width, height, identity \\ 0) do
+  def new(width, height, identity \\ 0) when width > 0 and height > 0 do
     %Tensor{identity: identity, dimensions: [width, height]}
   end
 
@@ -35,11 +35,12 @@ defmodule Matrix do
     Tensor.to_list(matrix)
   end
 
-  def identity do
-
+  def identity(identity \\ 1, size) when size > 0 do
+    elems = Stream.cycle([identity]) |> Enum.take(size)
+    diag(elems, 0)
   end
 
-  def diag(list, identity \\ 0) when is_list(list) do
+  def diag(list = [_|_], identity \\ 0) when is_list(list) do
     size = length(list)
     matrix = new(size, size, identity)
     list

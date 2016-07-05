@@ -138,6 +138,10 @@ defmodule Tensor do
     do_to_list(tensor.contents, tensor.dimensions, tensor.identity)
   end
 
+  defp do_to_list(tensor_contents, [dimension | dimensions], identity) when dimension <= 0 do
+    []
+  end
+
   defp do_to_list(tensor_contents, [dimension], identity) do
     for x <- 0..dimension-1 do
       Map.get(tensor_contents, x, identity)

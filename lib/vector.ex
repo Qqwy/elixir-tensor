@@ -52,7 +52,7 @@ defmodule Vector do
 
 
   def add(a = %Tensor{dimensions: [l]}, b) when is_number(b) do
-    Tensor.map(a, fn elem -> elem + b end)
+    Tensor.add_number(a, b)
   end
   
   # Elementwise addition of two vectors

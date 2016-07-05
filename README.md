@@ -94,6 +94,8 @@ Tensors have implementations of the Access Protocol, which let you do:
     │     100,       4│
     └                 ┘
 
+It is even possible to use negative indices to look from the end of the Vector/Matrix/Tensor!
+
 ### Enumerable Protocol
 
 Tensors allow you to enumerate over the values inside, using the Enumerable protocol.
@@ -149,4 +151,12 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
       ]
     end
     ```
+
+## Roadmap
+
+- [ ] Move more functionality to Tensor.
+- [ ] Ensure that when the identity value is stored, it is not actually stored in a Tensor, so it is kept sparse.
+- [ ] More ways to iterate over vectors/matrices/tensors.
+- [ ] Improve documentation.
+- [ ] Write (doc)tests for all public functions.
 

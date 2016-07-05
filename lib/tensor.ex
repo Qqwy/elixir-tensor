@@ -88,9 +88,16 @@ defmodule Tensor do
   Returns a Tensor of one order less, containing all fields for which the highest-order accessor matches.
   In the case of a Vector, returns the bare value at the given location.
 
+  `key` has to be an integer, smaller than the size of the highest dimension of the tensor. 
+  When `key` is negative, we will look from the right side of the Tensor.
+
   This is part of the Access Behaviour implementation for Tensor.
   """
-  def fetch(tensor, key) do
+  def fetch(tensor = %Tensor{dimensions: [current_dimension|_]}, key) do
+    key = (key < 0) && (current_dimension + key) || key
+    if !is_number(key) || key >= current_dimension do
+      raise Tensor.AccessError, key
+    end
     if vector?(tensor) do # Return item inside vector.
       {:ok, Map.get(tensor.contents, key, tensor.identity)}
     else
@@ -108,21 +115,35 @@ defmodule Tensor do
   @doc """
   Returns and removes the value associated with `key` from the tensor.
 
+  `key` has to be an integer, smaller than the size of the highest dimension of the tensor. 
+  When `key` is negative, we will look from the right side of the Tensor.
+
   Notice that because of how Tensors are structured, the structure of the tensor will not change.
   Values are basically reset to the 'identity' value.
 
   This is part of the Access Behaviour implementation for Tensor.
   """
-  def pop(tensor, key, default \\ nil) do
-    #raise "TODO: Implement Access.pop"
+  def pop(tensor = %Tensor{dimensions: [current_dimension|_]}, key, default \\ nil) do
+    key = (key < 0) && (current_dimension + key) || key
+    if !is_number(key) || key >= current_dimension do
+      raise Tensor.AccessError, key
+    end
     Map.pop(tensor.contents, key, default)
   end
 
-  def get_and_update(tensor, key, fun) do
-    # TODO: Raise if key not numeric.
-    # TODO: Raise if key outside of dimension bounds.
-    # TODO: Ensure that identity values are not stored.
-    if key < 0 || key >= hd(tensor.dimensions) do
+  # TODO: Ensure that identity values are not stored.
+  @doc """
+  Gets the value inside `tensor` at key `key`, and calls the passed function `fun` on it, 
+  which might update it, or return `:pop` if it ought to be removed.
+
+
+  `key` has to be an integer, smaller than the size of the highest dimension of the tensor. 
+  When `key` is negative, we will look from the right side of the Tensor.
+
+  """
+  def get_and_update(tensor  = %Tensor{dimensions: [current_dimension|_]}, key, fun) do
+    key = (key < 0) && (current_dimension + key) || key
+    if !is_number(key) || key >= current_dimension do
       raise Tensor.AccessError, key
     end
     {result, contents} = 
@@ -205,6 +226,8 @@ defmodule Tensor do
   @doc """
   Maps `fun` over all values in the Tensor.
 
+  This is a _true_ mapping operation, as the result will be a new Tensor.
+
   `fun` gets the current value as input, and should return the new value to use.
 
   It is important that `fun` is a pure function, as internally it will only be mapped over all values
@@ -228,6 +251,16 @@ defmodule Tensor do
       {k, do_map(v, dimensions, fun)}
     end
   end
+
+  @doc """
+  Adds the number `b` to all elements in Tensor `a`.
+  """
+  def add_number(a = %Tensor{dimensions: [l]}, b) when is_number(b) do
+    Tensor.map(a, fn elem -> elem + b end)
+  end
+
+
+
 
   defimpl Enumerable do
     def count(tensor), do: {:ok, Enum.sum(tensor.dimensions)}

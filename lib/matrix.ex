@@ -204,7 +204,7 @@ defmodule Matrix do
 
   # Scalar addition
   def add(matrix, num) when is_number(num) do 
-    Tensor.map(matrix, fn val -> val + num end)
+    Tensor.add_number(a, b)
   end
 
   @doc """

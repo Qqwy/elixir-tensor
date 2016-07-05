@@ -22,8 +22,21 @@ defmodule Tensor do
     defexception [:message]
 
     def exception(key) do
-      %AccessError{message: "The requested key `#{key}` could not be found inside this Vector/Matrix/Tensor. It probably is out of range"}
+      %AccessError{message: "The requested key `#{inspect key}` could not be found inside this Vector/Matrix/Tensor. It probably is out of range"}
     end
+  end
+
+  defmodule CollectableError do 
+    defexception [:message]
+
+    def exception(value), do: %CollectableError{message: """
+    Could not insert `#{inspect value}` to the Vector/Matrix/Tensor.
+    Make sure that you pass in a list of Tensors that are order n-1 from the tensor you add them to,
+    and that they have the same dimensions (save for the highest one).
+
+    For instance, you can only add vectors of length 3 to a n×3 matrix,
+    and matrices of size 2×4 can only be added to an order-3 tensor of size n×2×3 
+    """}
   end
 
   @opaque tensor :: %Tensor{}
@@ -252,6 +265,8 @@ defmodule Tensor do
           new_length = length+1
           new_contents = put_in(tensor.contents, [length], elem)
           %Tensor{tensor | dimensions: [new_length], contents: new_contents}
+        _, {:cont, elem} -> 
+          raise Tensor.CollectableError, elem
         tensor,  :done -> tensor
         _tensor, :halt -> :ok
       end}

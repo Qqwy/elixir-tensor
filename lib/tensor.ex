@@ -253,6 +253,28 @@ defmodule Tensor do
   end
 
   @doc """
+  Returns a new tensor, where all values are `{list_of_coordinates, value}` tuples.
+
+  The identity of this Tensor will be {:identity, original_identity} (TODO)
+
+  Note that this new tuple is always dense, as the coordinates of all values are different.
+  """
+  def with_coordinates(tensor = %Tensor{}) do
+    with_coordinates(tensor, [])
+  end
+  def with_coordinates(tensor = %Tensor{dimensions: [current_dimension]}, coordinates) do
+    for i <- 0..(current_dimension-1), into: %Tensor{dimensions: [0]} do
+      {[i|coordinates], tensor[i]}
+    end
+  end
+
+  def with_coordinates(tensor = %Tensor{dimensions: [current_dimension | lower_dimensions]}, coordinates) do
+    for i <- 0..(current_dimension-1), into: %Tensor{dimensions: [0 | lower_dimensions]} do
+      with_coordinates(tensor[i], [i|coordinates])
+    end
+  end
+
+  @doc """
   Adds the number `b` to all elements in Tensor `a`.
   """
   def add_number(a = %Tensor{dimensions: [l]}, b) when is_number(b) do
@@ -286,8 +308,6 @@ defmodule Tensor do
         tensor = %Tensor{dimensions: dimensions = [cur_dimension| lower_dimensions]}, 
         {:cont, elem = %Tensor{dimensions: elem_dimensions}} 
         when lower_dimensions == elem_dimensions -> 
-          IO.inspect lower_dimensions
-          IO.inspect elem_dimensions
           new_dimensions = [cur_dimension+1| lower_dimensions]
           # new_contents = Map.put_new(tensor.contents, cur_dimension, elem)
           # IO.inspect new_contents

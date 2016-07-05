@@ -160,6 +160,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 - [ ] Improve Tensor inspect output.
 - [ ] Ensure that when the identity value is stored, it is not actually stored in a Tensor, so it is kept sparse.
 - [ ] More ways to iterate over vectors/matrices/tensors.
-- [ ] Improve documentation.
 - [ ] Write (doc)tests for all public functions.
+- [ ] Improve documentation.
+- [ ] Add Dyalizer specs for all methods.
 

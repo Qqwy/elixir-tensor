@@ -7,7 +7,7 @@ defmodule MatrixTest do
   end
 
   test "Inspect" do
-    matrix = Tensor.new([[1,2],[3,4]], [2,2])
+    matrix = Matrix.new([[1,2],[3,4]], 2,2)
     assert Inspect.inspect(matrix, []) == """
     #Matrix-(2×2)
     ┌                 ┐
@@ -17,22 +17,38 @@ defmodule MatrixTest do
     """
   end
 
-  test "transpose |> transpose is the same as original" do
-    matrix = Tensor.new([[1,2],[3,4]], [2,2])
-    assert matrix |> Matrix.transpose |> Matrix.transpose == matrix
+  test "identity" do
+    inspect Matrix.identity(3) =="""
+    #Matrix-(3×3)
+    ┌                          ┐
+    │       1,       0,       0│
+    │       0,       1,       0│
+    │       0,       0,       1│
+    └                          ┘
+    """
+  end
 
+  test "transpose |> transpose is the same as original" do
+    matrix = Matrix.new([[1,2],[3,4]], 2,2)
+    assert matrix |> Matrix.transpose |> Matrix.transpose == matrix
   end
 
   test "Scalar Addition" do
-    matrix = Tensor.new([[1,2],[3,4]], [2,2])
-    result = Tensor.new([[3,4],[5,6]], [2,2], 2)
+    matrix = Matrix.new([[1,2],[3,4]], 2,2)
+    result = Matrix.new([[3,4],[5,6]], 2,2, 2)
 
     assert Matrix.add(matrix, 2) == result
   end
 
+  test "scalar addition is commutative with transposition" do
+    matrix = Matrix.new([[1,2],[3,4]], 2,2)
+
+    assert matrix |> Matrix.transpose |> Matrix.add(2) == matrix |> Matrix.add(2) |> Matrix.transpose
+  end
+
   test "Matrix Multiplication" do 
-    m1 = Tensor.new([[2,3,4],[1,0,0]], [2,3])
-    m2 = Tensor.new([[0,1000],[1,100],[0,10]], [3,2])
+    m1 = Matrix.new([[2,3,4],[1,0,0]], 2,3)
+    m2 = Matrix.new([[0,1000],[1,100],[0,10]], 3,2)
     assert Matrix.mult(m1, m2) |> inspect == """
     #Matrix-(2×2)
     ┌                 ┐
@@ -41,4 +57,12 @@ defmodule MatrixTest do
     └                 ┘
     """
   end
+
+  test "matrix multiplication with the identity results in same matrix" do
+    m1 = Matrix.new([[2,3,4],[1,0,0]], 2,3)
+    mid = Matrix.identity(3)
+
+    assert Matrix.mult(m1, mid) == m1
+  end
+
 end

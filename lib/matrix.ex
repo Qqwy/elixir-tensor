@@ -76,7 +76,7 @@ defmodule Matrix do
   """
   def diag(list = [_|_], identity \\ 0) when is_list(list) do
     size = length(list)
-    matrix = new(size, size, identity)
+    matrix = new([], size, size, identity)
     list
     |> Enum.with_index
     |> Enum.reduce(matrix, fn {e, i}, mat -> 
@@ -119,35 +119,99 @@ defmodule Matrix do
     |> Matrix.transpose
   end
 
+  @doc """
+  Returns the rows of this matrix as a list of Vectors.
+  """
   def rows(matrix = %Tensor{dimensions: [w,h]}) do
     for i <- 0..h-1 do
       matrix[i]
     end
   end
 
+  @doc """
+  Returns the columns of this matrix as a list of Vectors.
+  """
   def columns(matrix = %Tensor{dimensions: [_,_]}) do
     matrix
     |> transpose
     |> rows
   end
 
+  @doc """
+  Returns the `n`-th row of the matrix as a Vector.
+
+  This is the same as doing matrix[n]
+  """
+  def row(matrix, n) do
+    matrix[n]
+  end
+
+  @doc """
+  Returns the `n`-th column of the matrix as a Vector.
+
+  If you're doing a lot of calls to `column`, consider transposing the matrix 
+  and calling `rows` on that transposed matrix, as it will be faster.
+  """
+  def column(matrix, n) do
+    transpose(matrix)[n]
+  end
+
+  def flip_vertical(matrix = %Tensor{dimensions: [w, h]}) do
+    new_contents = 
+      for {r, v} <- matrix.contents, into: %{} do
+        {h-1 - r, v}
+      end
+    %Tensor{matrix | contents: new_contents}
+  end
+
+  def flip_horizontal(matrix) do
+    matrix
+    |> transpose
+    |> flip_vertical
+    |> transpose
+  end
+
+  def rotate_counterclockwise(matrix) do
+    matrix
+    |> transpose
+    |> flip_vertical
+  end
+
+  def rotate_clockwise(matrix) do
+    matrix
+    |> flip_vertical
+    |> transpose
+  end
+
+  def rotate_180(matrix) do
+    matrix
+    |> flip_vertical
+    |> flip_horizontal
+  end
+
+
   # Scalar addition
   def add(matrix, num) when is_number(num) do 
     Tensor.map(matrix, fn val -> val + num end)
   end
 
-  # Scalar multiplication
-  def mult(matrix, num) when is_number(num) do 
-    Tensor.map(matrix, fn val -> val * num end)
-  end
-
   @doc """
-  Calculates the Matrix Multiplication of `a` * `b`.
+  Calculates the Scalar Multiplication or Matrix Multiplication of `a` * `b`.
+
+  If `b` is a number, then a new matrix where all values will be multiplied by `b` are returned.
+
+  if `b` is a matrix, then Matrix Multiplication is performed.
 
   This will only work as long as the height of `a` is the same as the width of `b`.
 
   This operation internally builds up a list-of-lists, and finally transforms that back to a matrix.
   """
+  # Scalar multiplication
+  def mult(matrix, num) when is_number(num) do 
+    Tensor.map(matrix, fn val -> val * num end)
+  end
+
+  # Matrix multiplication
   # TODO: What to do with identity?
   def mult(a = %Tensor{dimensions: [m,n]}, b = %Tensor{dimensions: [n,p]}) do
     b_t = transpose(b)
@@ -157,8 +221,6 @@ defmodule Matrix do
           Vector.dot_product(a[r], b_t[c])
         end
       end
-    IO.inspect(list_of_lists)
-
     Tensor.new(list_of_lists, [m, p])
   end
 

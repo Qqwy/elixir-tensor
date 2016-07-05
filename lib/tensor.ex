@@ -35,10 +35,10 @@ defmodule Tensor do
   """
   def fetch(tensor, key) do
     if vector?(tensor) do # Return item inside vector.
-      {:ok, tensor.contents[key]}
+      {:ok, Map.get(tensor.contents, key, tensor.identity)}
     else
       # Return lower dimension slice of tensor.
-      contents = tensor.contents[key]
+      contents = Map.get(tensor.contents, key, %{})
       if contents do
         dimensions = tl(tensor.dimensions)
         {:ok, %Tensor{identity: tensor.identity, contents: contents, dimensions: dimensions}}
@@ -135,15 +135,19 @@ defmodule Tensor do
   end
 
   def to_list(tensor) do
-    do_to_list(tensor.contents, tensor.dimensions)
+    do_to_list(tensor.contents, tensor.dimensions, tensor.identity)
   end
 
-  defp do_to_list(tensor_contents, [dimension]) do
-    for x <- 0..dimension-1, do: tensor_contents[x]
+  defp do_to_list(tensor_contents, [dimension], identity) do
+    for x <- 0..dimension-1 do
+      Map.get(tensor_contents, x, identity)
+    end
   end
 
-  defp do_to_list(tensor_contents, [dimension | dimensions]) do
-    for x <- 0..dimension-1, do: do_to_list(tensor_contents[x], dimensions)
+  defp do_to_list(tensor_contents, [dimension | dimensions], identity) do
+    for x <- 0..dimension-1 do 
+      do_to_list(Map.get(tensor_contents, x, %{}), dimensions, identity)
+    end
   end
 
 end

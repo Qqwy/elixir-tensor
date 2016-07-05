@@ -34,4 +34,18 @@ defmodule Matrix do
   def to_list(matrix) do
     Tensor.to_list(matrix)
   end
+
+  def identity do
+
+  end
+
+  def diag(list, identity \\ 0) when is_list(list) do
+    size = length(list)
+    matrix = new(size, size, identity)
+    list
+    |> Enum.with_index
+    |> Enum.reduce(matrix, fn {e, i}, mat -> 
+      put_in(mat, [i,i], e)
+    end)
+  end
 end

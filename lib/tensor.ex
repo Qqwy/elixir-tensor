@@ -56,7 +56,7 @@ defmodule Tensor do
     # TODO: Raise if key not numeric.
     # TODO: Raise if key outside of dimension bounds.
     if key < 0 || key >= hd(tensor.dimensions) do
-      raise "invalid key while doing get_and_update on Tensor."
+      raise "invalid key #{key} while doing get_and_update on Tensor."
     end
     {result, contents} = 
       if vector? tensor do
@@ -64,7 +64,7 @@ defmodule Tensor do
       else
         {:ok, ll_tensor} = fetch(tensor, key)
         {result, ll_tensor2} = fun.(ll_tensor)
-        {result, %{tensor.contents | key => ll_tensor2.contents}}
+        {result, Map.put(tensor.contents, key, ll_tensor2.contents)}
       end
     {result, %Tensor{tensor | contents: contents}}
   end

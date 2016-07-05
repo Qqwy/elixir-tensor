@@ -6,8 +6,8 @@ defmodule Vector do
     end
   end
 
-  def new(list, identity \\ nil) do
-    Tensor.new(list, [Kernel.length(list)], identity)
+  def new(length, identity \\ nil) do
+    Tensor.new([], [length], identity)
   end
 
   def length(vector) do
@@ -20,7 +20,18 @@ defmodule Vector do
     end
   end
 
-  def from_list(list) do
+  def from_list(list, identity \\ nil) do
     Tensor.new(list)
   end
+
+  def dot_product(a = %Tensor{dimensions: [l]}, b = %Tensor{dimensions: [l]}) do
+    products = 
+      for i <- 0..(l-1) do
+        a[i] * b[i]
+      end
+    Enum.sum(products)
+  end
+  def dot_product(a, b), do: raise "Two Vectors have to have the same length to be able to compute the dot product"
+
+  
 end

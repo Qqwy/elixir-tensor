@@ -134,7 +134,7 @@ defmodule Matrix do
   This operation internally builds up a list-of-lists, and finally transforms that back to a matrix.
   """
   # TODO: What to do with identity?
-  def dot_product(a = %Tensor{dimensions: [m,n]}, b = %Tensor{dimensions: [n,p]}) do
+  def mult(a = %Tensor{dimensions: [m,n]}, b = %Tensor{dimensions: [n,p]}) do
     b_t = transpose(b)
     list_of_lists = 
       for r <- (0..m-1) do
@@ -148,7 +148,7 @@ defmodule Matrix do
   end
 
 
-  def dot_product(a = %Tensor{dimensions: [_,_]}, b = %Tensor{dimensions: [_,_]}) do
+  def mult(a = %Tensor{dimensions: [_,_]}, b = %Tensor{dimensions: [_,_]}) do
     raise "Cannot compute dot product if the height of matrix `a` does not match the width of matrix `b`!"
   end
 

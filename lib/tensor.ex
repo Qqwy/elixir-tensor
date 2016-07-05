@@ -120,7 +120,7 @@ defmodule Tensor do
 
   TODO: Solve this, maybe find a nicer way to create tensors.
   """
-  def new(nested_list_of_values, dimensions \\ nil, identity \\ nil) do
+  def new(nested_list_of_values, dimensions \\ nil, identity \\ 0) do
     dimensions = dimensions || [length(nested_list_of_values)]
     # TODO: Dimension inference.
     contents = 

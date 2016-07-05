@@ -14,7 +14,7 @@ defmodule Vector do
   def new(length_or_list, identity \\ 0)
 
   def new(list, identity) when is_list(list) do
-    Tensor.new(list, [length(list)], identity)
+    Tensor.new(list, [Kernel.length(list)], identity)
   end
 
   def new(length, identity) when is_number(length) do
@@ -48,7 +48,18 @@ defmodule Vector do
       end
     Enum.sum(products)
   end
-  def dot_product(a, b), do: raise "Two Vectors have to have the same length to be able to compute the dot product"
+  def dot_product(a, b), do: raise Tensor.ArithmeticError, "Two Vectors have to have the same length to be able to compute the dot product"
 
+
+  def add(a = %Tensor{dimensions: [l]}, b) when is_number(b) do
+    Tensor.map(a, fn elem -> elem + b end)
+  end
+  
+  # Elementwise addition of two vectors
+  def add(a = %Tensor{dimensions: [l]}, b = %Tensor{dimensions: [l]}) do
+    for i <- 0..(l-1), into: Vector.new do
+      a[i] + b[i]
+    end
+  end
 
 end

@@ -6,7 +6,7 @@ defmodule MatrixTest do
     assert 1 + 1 == 2
   end
 
-  test "basic construction" do
+  test "Inspect" do
     matrix = Tensor.new([[1,2],[3,4]], [2,2])
     assert Inspect.inspect(matrix, []) == """
     #Matrix-(2×2)

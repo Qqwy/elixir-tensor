@@ -255,8 +255,6 @@ defmodule Tensor do
   @doc """
   Returns a new tensor, where all values are `{list_of_coordinates, value}` tuples.
 
-  The identity of this Tensor will be {:identity, original_identity} (TODO)
-
   Note that this new tuple is always dense, as the coordinates of all values are different.
   """
   def with_coordinates(tensor = %Tensor{}) do
@@ -273,6 +271,41 @@ defmodule Tensor do
       with_coordinates(tensor[i], [i|coordinates])
     end
   end
+
+  def sparse_map_with_coordinates(tensor, fun) do
+    new_identity = fun.({:identity, tensor.identity})
+    new_contents = do_sparse_map_with_coordinates(tensor.contents, tensor.dimensions, fun, [])
+    %Tensor{tensor | identity: new_identity, contents: new_contents}
+  end
+
+  def do_sparse_map_with_coordinates(tensor_contents, [dimension], fun, coordinates) do
+    for {k,v} <- tensor_contents, into: %{} do
+      {k, fun.({[k|coordinates], v})}
+    end
+  end
+
+  def do_sparse_map_with_coordinates(tensor_contents, [dimension|dimensions], fun, coordinates) do
+    for {k,v} <- tensor_contents, into: %{} do
+      {k, do_sparse_map_with_coordinates(v, dimensions, fun, [k|coordinates])}
+    end
+  end
+
+  def dense_map_with_coordinates(tensor, fun) do
+    new_contents = do_dense_map_with_coordinates(tensor, tensor.dimensions, fun, [])
+  end
+
+  def do_dense_map_with_coordinates(tensor, [dimension], fun, coordinates) do
+    for i <- 0..(dimension-1), into: %Tensor{dimensions: [0]} do
+      fun.({[i|coordinates], tensor[i]})
+    end
+  end
+
+  def do_dense_map_with_coordinates(tensor, [dimension|lower_dimensions], fun, coordinates) do
+    for i <- 0..(dimension-1), into: %Tensor{dimensions: [0|lower_dimensions]} do
+      do_dense_map_with_coordinates(tensor[i], lower_dimensions, fun, [i|coordinates])
+    end
+  end
+
 
   @doc """
   Adds the number `b` to all elements in Tensor `a`.

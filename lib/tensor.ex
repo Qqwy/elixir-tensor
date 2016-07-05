@@ -9,20 +9,47 @@ defmodule Tensor do
         2 ->
           Matrix.Inspect.inspect(tensor, opts)
         _ ->
-          "#Tensor-(#{tensor.dimensions |> Enum.join("x")}) (#{inspect tensor.contents})"
+          "#Tensor-(#{tensor.dimensions |> Enum.join("×")}) (#{inspect tensor.contents})"
       end
     end
   end
 
+  @doc """
+  Returs true if the tensor is a 1-order Tensor, which is also known as a Vector.
+  """
   def vector?(%Tensor{dimensions: [_]}), do: true
   def vector?(%Tensor{}), do: false
+
+  @doc """
+  Returs true if the tensor is a 2-order Tensor, which is also known as a Matrix.
+  """
   def matrix?(%Tensor{dimensions: [_,_]}), do: true
   def matrix?(%Tensor{}), do: false
 
+
+  @doc """
+  Returns the _order_ of the Tensor.
+
+  This is 1 for Vectors, 2 for Matrices, etc.
+  It is the amount of dimensions the tensor has.
+  """
+  def order(tensor) do
+    length(tensor.dimensions)
+  end
+
+  @doc """
+  Returns the dimensions of the tensor.
+  """
   def dimensions(tensor = %Tensor{}) do 
     tensor.dimensions
   end
 
+  @doc """
+  Returns the identity, the default value a tensor inserts at a position when no other value is set.
+
+  This is mostly used internally, and is used to allow Tensors to take a lot less space because 
+  only values that are not `empty` have to be stored.
+  """
   def identity(tensor = %Tensor{}) do 
     tensor.identity
   end
@@ -31,7 +58,10 @@ defmodule Tensor do
   @behaviour Access
 
   @doc """
-  Returns a Tensor of one dimension less, containing all fields for which the highest-dimension accessor matches.
+  Returns a Tensor of one order less, containing all fields for which the highest-order accessor matches.
+  In the case of a Vector, returns the bare value at the given location.
+
+  This is part of the Access Behaviour implementation for Tensor.
   """
   def fetch(tensor, key) do
     if vector?(tensor) do # Return item inside vector.
@@ -48,8 +78,17 @@ defmodule Tensor do
     end
   end
 
+  @doc """
+  Returns and removes the value associated with `key` from the tensor.
+
+  Notice that because of how Tensors are structured, the structure of the tensor will not change.
+  Values are basically reset to the 'identity' value.
+
+  This is part of the Access Behaviour implementation for Tensor.
+  """
   def pop(tensor, key, default \\ nil) do
-    raise "TODO: Implement Access.pop"
+    #raise "TODO: Implement Access.pop"
+    Map.pop(tensor.contents, key, default)
   end
 
   def get_and_update(tensor, key, fun) do
@@ -71,8 +110,12 @@ defmodule Tensor do
 
 
 
-
-  def new(nested_list_of_values, dimensions \\ nil, identity \\ fn _ -> nil end) do
+  @doc """
+  Creates a new Tensor from a list of lists (of lists of lists of ...).
+  The second argument should be the dimensions the tensor should become.
+  The optional third argument is an identity value for the tensor, that all non-set values will default to.
+  """
+  def new(nested_list_of_values, dimensions \\ nil, identity \\ nil) do
     dimensions = dimensions || [length(nested_list_of_values)]
     # TODO: Dimension inference.
     contents = 
@@ -134,6 +177,9 @@ defmodule Tensor do
     end)
   end
 
+  @doc """
+  Returns the tensor as a nested list of lists (of lists of lists ..., depending on the order of the Tensor)
+  """
   def to_list(tensor) do
     do_to_list(tensor.contents, tensor.dimensions, tensor.identity)
   end
@@ -152,6 +198,19 @@ defmodule Tensor do
     for x <- 0..dimension-1 do 
       do_to_list(Map.get(tensor_contents, x, %{}), dimensions, identity)
     end
+  end
+
+  @doc """
+  `lifts` a Tensor up one order, by adding a dimension of size `1` to the start.
+
+  This transforms a length-`n` Vector to a 1×`n` Matrix, a `n`×`m` matrix to a `1`×`n`×`m` 3-order Tensor, etc.
+  """
+  def lift(tensor) do
+    %Tensor{
+      identity: tensor.identity, 
+      dimensions: [1|tensor.dimensions], 
+      contents: %{0 => tensor.contents}
+    }
   end
 
 end

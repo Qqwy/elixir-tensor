@@ -1,6 +1,7 @@
 defmodule Vector do
   import Kernel, except: [length: 1]
   defmodule Inspect do
+    @doc false
     def inspect(vector, opts) do
       "#Vector-(#{hd vector.dimensions})#{inspect Vector.to_list(vector)}"
     end

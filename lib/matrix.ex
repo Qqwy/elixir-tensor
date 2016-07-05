@@ -19,8 +19,8 @@ defmodule Matrix do
           |> Enum.join(",") 
         end)
       #  |> Enum.join("│\n│")
-      top_row_length = String.length(List.first(contents_inspect))
-      bottom_row_length = String.length(List.last(contents_inspect))
+      top_row_length = String.length(List.first(contents_inspect) || "")
+      bottom_row_length = String.length(List.last(contents_inspect) || "")
       top = "\n┌#{String.pad_trailing("", top_row_length)}┐\n│"
       bottom = "│\n└#{String.pad_trailing("", bottom_row_length)}┘\n"
       contents_str = contents_inspect |> Enum.join("│\n│")
@@ -33,7 +33,7 @@ defmodule Matrix do
 
   Optionally pass in a fourth argument, which will be the default values the matrix will be filled with. (default: `0`)
   """
-  def new(list_of_lists \\ [], width, height, identity \\ 0) when width > 0 and height > 0 do
+  def new(list_of_lists \\ [], width, height, identity \\ 0) when width >= 0 and height >= 0 and (width > 0 or height > 0) do
     contents = list_of_lists_to_matrix_map(list_of_lists)
     %Tensor{identity: identity, dimensions: [width, height], contents: contents}
   end

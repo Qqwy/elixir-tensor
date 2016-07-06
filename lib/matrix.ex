@@ -115,7 +115,6 @@ defmodule Matrix do
   end
 
   @doc """
-  Takes a vector, and returns a `n`×1 matrix.
   """
   def column_matrix(vector = %Tensor{dimensions: [_]}) do
     vector

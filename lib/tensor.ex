@@ -300,7 +300,7 @@ defmodule Tensor do
     end
   end
 
-  def do_sparse_map_with_coordinates(tensor_contents, [_current_dimension, lower_dimensions], fun, coordinates) do
+  def do_sparse_map_with_coordinates(tensor_contents, [_current_dimension | lower_dimensions], fun, coordinates) do
     for {k,v} <- tensor_contents, into: %{} do
       {k, do_sparse_map_with_coordinates(v, lower_dimensions, fun, [k|coordinates])}
     end

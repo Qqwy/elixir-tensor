@@ -214,6 +214,8 @@ defmodule Tensor do
   `lifts` a Tensor up one order, by adding a dimension of size `1` to the start.
 
   This transforms a length-`n` Vector to a 1×`n` Matrix, a `n`×`m` matrix to a `1`×`n`×`m` 3-order Tensor, etc.
+
+  See also `Tensor.slices/1`
   """
   def lift(tensor) do
     %Tensor{
@@ -256,6 +258,7 @@ defmodule Tensor do
   Returns a new tensor, where all values are `{list_of_coordinates, value}` tuples.
 
   Note that this new tuple is always dense, as the coordinates of all values are different.
+  The identity is left unchanged.
   """
   def with_coordinates(tensor = %Tensor{}) do
     with_coordinates(tensor, [])
@@ -272,6 +275,17 @@ defmodule Tensor do
     end
   end
 
+  @doc """
+  Maps a function over the values in the tensor.
+
+  The function will receive a tuple of the form {list_of_coordinates, value}.
+
+  Note that only the values that are not the same as the identity will call the function.
+  Finally, the function will be called once to calculate the new identity. This call will be of shape {:identity, value}.
+
+  Because of this _sparse/lazy_ invocation, it is important that `fun` is a pure function, as this is the only way
+  to guarantee that the results will be the same, regardless of at what place the identity is used.
+  """
   def sparse_map_with_coordinates(tensor, fun) do
     new_identity = fun.({:identity, tensor.identity})
     new_contents = do_sparse_map_with_coordinates(tensor.contents, tensor.dimensions, fun, [])
@@ -290,6 +304,11 @@ defmodule Tensor do
     end
   end
 
+  @doc """
+  Maps a function over _all_ values in the tensor, including all values that are equal to the tensor identity.
+
+  The function will receive a tuple of the form {list_of_coordinates, value},
+  """
   def dense_map_with_coordinates(tensor, fun) do
     new_contents = do_dense_map_with_coordinates(tensor, tensor.dimensions, fun, [])
   end
@@ -308,23 +327,62 @@ defmodule Tensor do
 
 
   @doc """
+  Returns a list containing all lower-dimension Tensors in the Tensor.
+
+  For a Vector, this will just be a list of values.
+  For a Matrix, this will be a list of rows.
+  For a order-3 Tensor, this will be a list of matrices, etc.
+  """
+  def slices(tensor = %Tensor{dimensions: [current_dimension | lower_dimensions]}) do
+    for i <- 0..current_dimension-1 do
+      tensor[i]
+    end
+  end
+
+  @doc """
+  Builds up a tensor from a list of slices in a lower dimension.
+  A list of values will build a Vector.
+  A list of same-length vectors will create a Matrix.
+  A list of same-size matrices will create an order-3 Tensor.
+  """
+  def from_slices(list_of_slices = [%Tensor{dimensions: dimensions , identity: identity} | _rest]) do
+    Enum.into(list_of_slices, Tensor.new([], [0 | dimensions], identity))
+  end
+
+  def from_slices(list_of_values) do
+    Tensor.new(list_of_values)
+  end
+
+  @doc """
   Adds the number `b` to all elements in Tensor `a`.
   """
   def add_number(a = %Tensor{dimensions: [l]}, b) when is_number(b) do
-    Tensor.map(a, fn elem -> elem + b end)
+    Tensor.map(a, &(&1 + b))
+  end
+
+  def mul_number(a = %Tensor{dimensions: [l]}, b) when is_number(b) do
+    Tensor.map(a, &(&1 * b))
+  end
+
+  def sub_number(a = %Tensor{dimensions: [l]}, b) when is_number(b) do
+    Tensor.map(a, &(&1 - b))
+  end
+
+  def div_number(a = %Tensor{dimensions: [l]}, b) when is_number(b) do
+    Tensor.map(a, &(&1 / b))
   end
 
 
 
-
   defimpl Enumerable do
-    def count(tensor), do: {:ok, Enum.sum(tensor.dimensions)}
+    
+    def count(tensor), do: {:ok, Enum.reduce(tensor.dimensions, 1, &(&1 * &2))}
   
     def member?(tensor, element), do: {:error, __MODULE__}
 
     def reduce(tensor, acc, fun) do
       tensor
-      |> Tensor.to_list
+      |> Tensor.slices
       |> do_reduce(acc, fun)
     end
   
@@ -342,8 +400,6 @@ defmodule Tensor do
         {:cont, elem = %Tensor{dimensions: elem_dimensions}} 
         when lower_dimensions == elem_dimensions -> 
           new_dimensions = [cur_dimension+1| lower_dimensions]
-          # new_contents = Map.put_new(tensor.contents, cur_dimension, elem)
-          # IO.inspect new_contents
           new_tensor = %Tensor{tensor | dimensions: new_dimensions, contents: tensor.contents}
           put_in new_tensor, [cur_dimension], elem
         # Inserting values directly into a Vector
@@ -352,6 +408,7 @@ defmodule Tensor do
           new_contents = put_in(tensor.contents, [length], elem)
           %Tensor{tensor | dimensions: [new_length], contents: new_contents}
         _, {:cont, elem} -> 
+          # Other operations not permitted
           raise Tensor.CollectableError, elem
         tensor,  :done -> tensor
         _tensor, :halt -> :ok

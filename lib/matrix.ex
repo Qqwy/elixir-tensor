@@ -125,10 +125,17 @@ defmodule Matrix do
   @doc """
   Returns the rows of this matrix as a list of Vectors.
   """
-  def rows(matrix = %Tensor{dimensions: [w,h]}) do
-    for i <- 0..h-1 do
-      matrix[i]
-    end
+  def rows(matrix = %Tensor{dimensions: [_w,_h]}) do
+    Tensor.slices(matrix)
+  end
+
+  @doc """
+  Builds a Matrix up from a list of vectors.
+
+  Will only work as long as the vectors have the same length.
+  """
+  def from_rows(list_of_vectors) do
+    Tensor.from_slices(list_of_vectors)
   end
 
   @doc """
@@ -204,7 +211,7 @@ defmodule Matrix do
 
   # Scalar addition
   def add(matrix, num) when is_number(num) do 
-    Tensor.add_number(a, b)
+    Tensor.add_number(matrix, num)
   end
 
   @doc """

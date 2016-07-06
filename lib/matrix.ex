@@ -90,11 +90,11 @@ defmodule Matrix do
   def symmetric?(matrix = %Tensor{dimensions: [s,s]}) do
     matrix == matrix |> transpose
   end
+  def symmetric?(%Tensor{dimensions: [_,_]}), do: false
 
-  def square?(matrix = %Tensor{dimensions: [s,s]}), do: true
-  def square?(matrix = %Tensor{dimensions: [_,_]}), do: false
+  def square?(%Tensor{dimensions: [s,s]}), do: true
+  def square?(%Tensor{dimensions: [_,_]}), do: false
 
-  def symmetric?(matrix = %Tensor{dimensions: [_,_]}), do: false
 
   def transpose(matrix = %Tensor{dimensions: [w,h]}) do
     #Tensor.transpose(matrix, 1)
@@ -176,7 +176,7 @@ defmodule Matrix do
     end
   end
 
-  def flip_vertical(matrix = %Tensor{dimensions: [w, h]}) do
+  def flip_vertical(matrix = %Tensor{dimensions: [_w, h]}) do
     new_contents = 
       for {r, v} <- matrix.contents, into: %{} do
         {h-1 - r, v}
@@ -245,7 +245,7 @@ defmodule Matrix do
   end
 
 
-  def mult(a = %Tensor{dimensions: [_,_]}, b = %Tensor{dimensions: [_,_]}) do
+  def mult(_a = %Tensor{dimensions: [_,_]}, _b = %Tensor{dimensions: [_,_]}) do
     raise Tensor.ArithmeticError, "Cannot compute dot product if the width of matrix `a` does not match the height of matrix `b`!"
   end
 
@@ -258,7 +258,7 @@ defmodule Matrix do
     Enum.sum(main_diagonal(matrix))
   end
 
-  def trace(matrix = %Tensor{dimensions: [_,_]}) do
+  def trace(%Tensor{dimensions: [_,_]}) do
     raise Tensor.ArithmeticError, "Matrix.trace/1 is not defined for non-square matrices!"
   end
 

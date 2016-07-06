@@ -2,7 +2,7 @@ defmodule Vector do
   import Kernel, except: [length: 1]
   defmodule Inspect do
     @doc false
-    def inspect(vector, opts) do
+    def inspect(vector, _opts) do
       "#Vector-(#{hd vector.dimensions})#{inspect Vector.to_list(vector)}"
     end
   end
@@ -48,10 +48,10 @@ defmodule Vector do
       end
     Enum.sum(products)
   end
-  def dot_product(a, b), do: raise Tensor.ArithmeticError, "Two Vectors have to have the same length to be able to compute the dot product"
+  def dot_product(_a, _b), do: raise Tensor.ArithmeticError, "Two Vectors have to have the same length to be able to compute the dot product"
 
 
-  def add(a = %Tensor{dimensions: [l]}, b) when is_number(b) do
+  def add(a = %Tensor{dimensions: [_l]}, b) when is_number(b) do
     Tensor.add_number(a, b)
   end
   

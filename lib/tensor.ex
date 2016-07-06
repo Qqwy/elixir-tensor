@@ -196,7 +196,7 @@ defmodule Tensor do
     do_to_list(tensor.contents, tensor.dimensions, tensor.identity)
   end
 
-  defp do_to_list(tensor_contents, [dimension | dimensions], identity) when dimension <= 0 do
+  defp do_to_list(_tensor_contents, [dimension | _dimensions], _identity) when dimension <= 0 do
     []
   end
 
@@ -244,13 +244,13 @@ defmodule Tensor do
     %Tensor{tensor | identity: new_identity, contents: new_contents}
   end
 
-  def do_map(tensor_contents, [dimension], fun) do
+  def do_map(tensor_contents, [_lowest_dimension], fun) do
     for {k,v} <- tensor_contents, into: %{} do
       {k, fun.(v)}
     end
   end
 
-  def do_map(tensor_contents, [dimension|dimensions], fun) do
+  def do_map(tensor_contents, [_dimension | dimensions], fun) do
     for {k,v} <- tensor_contents, into: %{} do
       {k, do_map(v, dimensions, fun)}
     end
@@ -294,15 +294,15 @@ defmodule Tensor do
     %Tensor{tensor | identity: new_identity, contents: new_contents}
   end
 
-  def do_sparse_map_with_coordinates(tensor_contents, [dimension], fun, coordinates) do
+  def do_sparse_map_with_coordinates(tensor_contents, [_lowest_dimension], fun, coordinates) do
     for {k,v} <- tensor_contents, into: %{} do
       {k, fun.({:lists.reverse([k|coordinates]), v})}
     end
   end
 
-  def do_sparse_map_with_coordinates(tensor_contents, [dimension|dimensions], fun, coordinates) do
+  def do_sparse_map_with_coordinates(tensor_contents, [_current_dimension, lower_dimensions], fun, coordinates) do
     for {k,v} <- tensor_contents, into: %{} do
-      {k, do_sparse_map_with_coordinates(v, dimensions, fun, [k|coordinates])}
+      {k, do_sparse_map_with_coordinates(v, lower_dimensions, fun, [k|coordinates])}
     end
   end
 
@@ -312,7 +312,7 @@ defmodule Tensor do
   The function will receive a tuple of the form {list_of_coordinates, value},
   """
   def dense_map_with_coordinates(tensor, fun) do
-    new_contents = do_dense_map_with_coordinates(tensor, tensor.dimensions, fun, [])
+    do_dense_map_with_coordinates(tensor, tensor.dimensions, fun, [])
   end
 
   def do_dense_map_with_coordinates(tensor, [dimension], fun, coordinates) do
@@ -321,9 +321,9 @@ defmodule Tensor do
     end
   end
 
-  def do_dense_map_with_coordinates(tensor, [dimension|lower_dimensions], fun, coordinates) do
+  def do_dense_map_with_coordinates(tensor, [dimension | lower_dimensions], fun, coordinates) do
     for i <- 0..(dimension-1), into: %Tensor{dimensions: [0|lower_dimensions]} do
-      do_dense_map_with_coordinates(tensor[i], lower_dimensions, fun, [i|coordinates])
+      do_dense_map_with_coordinates(tensor[i], lower_dimensions, fun, [i | coordinates])
     end
   end
 
@@ -335,7 +335,7 @@ defmodule Tensor do
   For a Matrix, this will be a list of rows.
   For a order-3 Tensor, this will be a list of matrices, etc.
   """
-  def slices(tensor = %Tensor{dimensions: [current_dimension | lower_dimensions]}) do
+  def slices(tensor = %Tensor{dimensions: [current_dimension | _lower_dimensions]}) do
     for i <- 0..current_dimension-1 do
       tensor[i]
     end
@@ -379,15 +379,11 @@ defmodule Tensor do
     transposed_contents = 
       sparse_tensor_with_coordinates.contents
       |> flatten_nested_map_of_tuples
-      |> IO.inspect
       |> Enum.map(fn {coords, v} -> 
         {Helper.swap_elems_in_list(coords, 0, dimension_b_index), v}
       end)
-      |> IO.inspect
       |> Enum.into(%{})
-      |> IO.inspect
       |> inflate_map
-      |> IO.inspect
     transposed_dimensions = Helper.swap_elems_in_list(tensor.dimensions, 0, dimension_b_index)
     %Tensor{tensor | dimensions: transposed_dimensions, contents: transposed_contents}
   end
@@ -418,19 +414,19 @@ defmodule Tensor do
   @doc """
   Adds the number `b` to all elements in Tensor `a`.
   """
-  def add_number(a = %Tensor{dimensions: [l|_]}, b) when is_number(b) do
+  def add_number(a = %Tensor{}, b) when is_number(b) do
     Tensor.map(a, &(&1 + b))
   end
 
-  def mul_number(a = %Tensor{dimensions: [l|_]}, b) when is_number(b) do
+  def mul_number(a = %Tensor{}, b) when is_number(b) do
     Tensor.map(a, &(&1 * b))
   end
 
-  def sub_number(a = %Tensor{dimensions: [l|_]}, b) when is_number(b) do
+  def sub_number(a = %Tensor{}, b) when is_number(b) do
     Tensor.map(a, &(&1 - b))
   end
 
-  def div_number(a = %Tensor{dimensions: [l|_]}, b) when is_number(b) do
+  def div_number(a = %Tensor{}, b) when is_number(b) do
     Tensor.map(a, &(&1 / b))
   end
 
@@ -440,7 +436,7 @@ defmodule Tensor do
     
     def count(tensor), do: {:ok, Enum.reduce(tensor.dimensions, 1, &(&1 * &2))}
   
-    def member?(tensor, element), do: {:error, __MODULE__}
+    def member?(_tensor, _element), do: {:error, __MODULE__}
 
     def reduce(tensor, acc, fun) do
       tensor
@@ -458,7 +454,7 @@ defmodule Tensor do
     def into(original ) do
       {original, fn
         # Building a higher-order tensor from lower-order tensors.
-        tensor = %Tensor{dimensions: dimensions = [cur_dimension| lower_dimensions]}, 
+        tensor = %Tensor{dimensions: [cur_dimension| lower_dimensions]}, 
         {:cont, elem = %Tensor{dimensions: elem_dimensions}} 
         when lower_dimensions == elem_dimensions -> 
           new_dimensions = [cur_dimension+1| lower_dimensions]

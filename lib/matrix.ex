@@ -97,14 +97,14 @@ defmodule Matrix do
 
 
   def transpose(matrix = %Tensor{dimensions: [w,h]}) do
-    #Tensor.transpose(matrix, 1)
-    new_contents = Enum.reduce(matrix.contents, %{}, fn {row_key, row_map}, new_row_map -> 
-      Enum.reduce(row_map, new_row_map, fn {col_key, value}, new_row_map ->
-        map = Map.put_new(new_row_map, col_key, %{})
-        put_in(map, [col_key, row_key], value)
-      end)
-    end)
-    %Tensor{identity: matrix.identity, contents: new_contents, dimensions: [h, w]}
+    Tensor.transpose(matrix, 1)
+    # new_contents = Enum.reduce(matrix.contents, %{}, fn {row_key, row_map}, new_row_map -> 
+    #   Enum.reduce(row_map, new_row_map, fn {col_key, value}, new_row_map ->
+    #     map = Map.put_new(new_row_map, col_key, %{})
+    #     put_in(map, [col_key, row_key], value)
+    #   end)
+    # end)
+    # %Tensor{identity: matrix.identity, contents: new_contents, dimensions: [h, w]}
   end
 
   @doc """

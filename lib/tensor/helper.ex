@@ -32,6 +32,15 @@ defmodule Tensor.Helper do
 
   def swap2(list, pos_a, pos_b) when pos_b < pos_a, do: swap2(list, pos_b, pos_a)
 
+  def map_swap(list, pos_a, pos_b) do
+    map = for {v, i} <- (list |> Enum.with_index), into: %{}, do: {i, v}
+    a = map[pos_a]
+    map
+    |> put_in([pos_a], map[pos_b])
+    |> put_in([pos_b], a)
+    |> Map.values
+  end
+
   # MAPS
 
   @doc """

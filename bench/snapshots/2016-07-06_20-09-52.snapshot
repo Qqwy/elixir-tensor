@@ -1,0 +1,10 @@
+duration:1.0;mem stats:false;sys mem stats:false
+module;test;tags;iterations;elapsed
+ListSwapBench	new swap 10		1000000	1453465
+ListSwapBench	new swap 100		200000	1616338
+ListSwapBench	new swap 1000		50000	3743585
+ListSwapBench	new swap 2		10000000	4718624
+ListSwapBench	old swap 10		1000000	1429320
+ListSwapBench	old swap 100		200000	1792739
+ListSwapBench	old swap 1000		50000	5704660
+ListSwapBench	old swap 2		10000000	8497680

@@ -354,21 +354,77 @@ defmodule Tensor do
   end
 
   @doc """
+  Transposes the Tensor, by swapping the outermost dimension for the `b`-th dimension.
+  """
+  def transpose(tensor, dimension_b_index) do
+    new_contents = do_transpose(tensor.contents, tensor.dimensions, [], dimension_b_index, %{})
+    dimension_b = Enum.fetch!(tensor.dimensions, dimension_b_index)
+    new_dimensions = 
+      tensor.dimensions 
+      |> List.replace_at(dimension_b_index, hd(tensor.dimensions))
+      |> List.replace_at(0, dimension_b)
+    %Tensor{tensor | dimensions: new_dimensions, contents: new_contents}
+  end
+
+  @doc """
+  Transposes the Tensor, by swapping the `a`-th dimension for the `b`-th dimension.
+
+  This is done in three steps (outside <-> a, outside <-> b, outside <-> a), so it is not extremely fast.
+  """
+  def transpose(tensor, dimension_a_index, dimension_b_index) do
+    tensor
+    |> transpose(dimension_a_index)
+    |> transpose(dimension_b_index)
+    |> transpose(dimension_a_index)
+  end
+
+
+  # TODO: Fix bugs. Right now works for two-dimensional Tensors, but higher dimensions will introduce bugs.
+  defp do_transpose(high_dimension_map, dimensions, coordinates, 0, acc_map) do
+    Enum.reduce(high_dimension_map, acc_map, fn {key, value}, acc_map -> 
+      # 1. Ensure that higher-level map coordinates are stored.
+      {acc_map, _} = 
+        [key | coordinates]
+          |> Enum.reduce({acc_map, []}, fn elem, {map, earlier_coords} -> 
+            full_coords = [elem | earlier_coords]
+            IO.puts "FOO"
+        IO.inspect acc_map
+            map = put_in(map, full_coords, get_in(map, full_coords) || %{})
+            {map, full_coords}
+          end)
+      # 2. store value in final level.
+      IO.puts "BAR"
+      IO.inspect acc_map
+      acc_map = put_in(acc_map, [key | coordinates], value)
+      acc_map
+    end)
+  end
+  defp do_transpose(high_dimension_map, [current_dimension | lower_dimensions], coordinates, dimension_depth, acc_map) do
+    Enum.reduce(high_dimension_map, acc_map, fn {key, lower_dimension_map}, acc_map ->
+      do_transpose(lower_dimension_map, lower_dimensions, [key | coordinates], dimension_depth - 1, acc_map)
+    end)
+  end
+
+
+
+
+
+  @doc """
   Adds the number `b` to all elements in Tensor `a`.
   """
-  def add_number(a = %Tensor{dimensions: [l]}, b) when is_number(b) do
+  def add_number(a = %Tensor{dimensions: [l|_]}, b) when is_number(b) do
     Tensor.map(a, &(&1 + b))
   end
 
-  def mul_number(a = %Tensor{dimensions: [l]}, b) when is_number(b) do
+  def mul_number(a = %Tensor{dimensions: [l|_]}, b) when is_number(b) do
     Tensor.map(a, &(&1 * b))
   end
 
-  def sub_number(a = %Tensor{dimensions: [l]}, b) when is_number(b) do
+  def sub_number(a = %Tensor{dimensions: [l|_]}, b) when is_number(b) do
     Tensor.map(a, &(&1 - b))
   end
 
-  def div_number(a = %Tensor{dimensions: [l]}, b) when is_number(b) do
+  def div_number(a = %Tensor{dimensions: [l|_]}, b) when is_number(b) do
     Tensor.map(a, &(&1 / b))
   end
 

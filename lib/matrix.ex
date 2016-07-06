@@ -1,7 +1,7 @@
 defmodule Matrix do
   defmodule Inspect do
     @doc false
-    def inspect(matrix, opts) do
+    def inspect(matrix, _opts) do
       "#Matrix-(#{matrix.dimensions |> Enum.join("×")})#{inspect_contents(matrix)}"
     end
 
@@ -97,6 +97,7 @@ defmodule Matrix do
   def symmetric?(matrix = %Tensor{dimensions: [_,_]}), do: false
 
   def transpose(matrix = %Tensor{dimensions: [w,h]}) do
+    #Tensor.transpose(matrix, 1)
     new_contents = Enum.reduce(matrix.contents, %{}, fn {row_key, row_map}, new_row_map -> 
       Enum.reduce(row_map, new_row_map, fn {col_key, value}, new_row_map ->
         map = Map.put_new(new_row_map, col_key, %{})

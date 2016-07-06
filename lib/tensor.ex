@@ -1,4 +1,6 @@
 defmodule Tensor do
+  alias Tensor.Helper
+
   defstruct [:identity, contents: %{}, dimensions: [1]]
 
   defimpl Inspect do
@@ -294,7 +296,7 @@ defmodule Tensor do
 
   def do_sparse_map_with_coordinates(tensor_contents, [dimension], fun, coordinates) do
     for {k,v} <- tensor_contents, into: %{} do
-      {k, fun.({[k|coordinates], v})}
+      {k, fun.({:lists.reverse([k|coordinates]), v})}
     end
   end
 
@@ -315,7 +317,7 @@ defmodule Tensor do
 
   def do_dense_map_with_coordinates(tensor, [dimension], fun, coordinates) do
     for i <- 0..(dimension-1), into: %Tensor{dimensions: [0]} do
-      fun.({[i|coordinates], tensor[i]})
+      fun.({:lists.reverse([i|coordinates]), tensor[i]})
     end
   end
 
@@ -353,18 +355,6 @@ defmodule Tensor do
     Tensor.new(list_of_values)
   end
 
-  @doc """
-  Transposes the Tensor, by swapping the outermost dimension for the `b`-th dimension.
-  """
-  def transpose(tensor, dimension_b_index) do
-    new_contents = do_transpose(tensor.contents, tensor.dimensions, [], dimension_b_index, %{})
-    dimension_b = Enum.fetch!(tensor.dimensions, dimension_b_index)
-    new_dimensions = 
-      tensor.dimensions 
-      |> List.replace_at(dimension_b_index, hd(tensor.dimensions))
-      |> List.replace_at(0, dimension_b)
-    %Tensor{tensor | dimensions: new_dimensions, contents: new_contents}
-  end
 
   @doc """
   Transposes the Tensor, by swapping the `a`-th dimension for the `b`-th dimension.
@@ -379,29 +369,45 @@ defmodule Tensor do
   end
 
 
-  # TODO: Fix bugs. Right now works for two-dimensional Tensors, but higher dimensions will introduce bugs.
-  defp do_transpose(high_dimension_map, dimensions, coordinates, 0, acc_map) do
-    Enum.reduce(high_dimension_map, acc_map, fn {key, value}, acc_map -> 
-      # 1. Ensure that higher-level map coordinates are stored.
-      {acc_map, _} = 
-        [key | coordinates]
-          |> Enum.reduce({acc_map, []}, fn elem, {map, earlier_coords} -> 
-            full_coords = [elem | earlier_coords]
-            IO.puts "FOO"
-        IO.inspect acc_map
-            map = put_in(map, full_coords, get_in(map, full_coords) || %{})
-            {map, full_coords}
-          end)
-      # 2. store value in final level.
-      IO.puts "BAR"
-      IO.inspect acc_map
-      acc_map = put_in(acc_map, [key | coordinates], value)
-      acc_map
-    end)
+  @doc """
+  Transposes the Tensor, by swapping the outermost dimension for the `b`-th dimension.
+  """
+  def transpose(tensor, dimension_b_index) do
+    sparse_tensor_with_coordinates = 
+      tensor
+      |> Tensor.sparse_map_with_coordinates(fn {coords, v} -> {coords, v} end)
+    transposed_contents = 
+      sparse_tensor_with_coordinates.contents
+      |> flatten_nested_map_of_tuples
+      |> IO.inspect
+      |> Enum.map(fn {coords, v} -> 
+        {Helper.swap_elems_in_list(coords, 0, dimension_b_index), v}
+      end)
+      |> IO.inspect
+      |> Enum.into(%{})
+      |> IO.inspect
+      |> inflate_map
+      |> IO.inspect
+    transposed_dimensions = Helper.swap_elems_in_list(tensor.dimensions, 0, dimension_b_index)
+    %Tensor{tensor | dimensions: transposed_dimensions, contents: transposed_contents}
   end
-  defp do_transpose(high_dimension_map, [current_dimension | lower_dimensions], coordinates, dimension_depth, acc_map) do
-    Enum.reduce(high_dimension_map, acc_map, fn {key, lower_dimension_map}, acc_map ->
-      do_transpose(lower_dimension_map, lower_dimensions, [key | coordinates], dimension_depth - 1, acc_map)
+
+  # Turns a map of the format `%{1 => %{2 => %{3 => 4}}}`
+  # into [{[1,2,3] => 4}]
+  defp flatten_nested_map_of_tuples(nested_map_of_tuples = %{}) do
+    values = Map.values(nested_map_of_tuples)
+    if match?({_,_}, hd(values)) do
+      values
+    else
+      Enum.flat_map(values, &flatten_nested_map_of_tuples/1)
+    end
+  end
+
+
+  # elements in map are supposed to be {list_of_coords, val}
+  defp inflate_map(map) do
+    Enum.reduce(map, %{}, fn {list_of_coords, val}, new_map -> 
+      Helper.put_in_path(new_map, list_of_coords, val)
     end)
   end
 

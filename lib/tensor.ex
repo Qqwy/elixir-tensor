@@ -24,7 +24,7 @@ defmodule Tensor do
   defmodule AccessError do
     defexception [:message]
 
-    def exception(key) do
+    def exception(key: key) do
       %AccessError{message: "The requested key `#{inspect key}` could not be found inside this Vector/Matrix/Tensor. It probably is out of range"}
     end
   end
@@ -65,7 +65,7 @@ defmodule Tensor do
   This is 1 for Vectors, 2 for Matrices, etc.
   It is the amount of dimensions the tensor has.
   """
-  @spec order?(tensor) :: boolean
+  @spec order(tensor) :: non_neg_integer
   def order(tensor) do
     length(tensor.dimensions)
   end
@@ -73,7 +73,7 @@ defmodule Tensor do
   @doc """
   Returns the dimensions of the tensor.
   """
-  @spec dimensions?(tensor) :: [integer]
+  @spec dimensions(tensor) :: [non_neg_integer]
   def dimensions(tensor = %Tensor{}) do 
     tensor.dimensions
   end
@@ -104,13 +104,13 @@ defmodule Tensor do
 
   This is part of the Access Behaviour implementation for Tensor.
   """
-  @spec fetch(tensor, integer) :: any
+  @spec fetch(tensor, integer) :: {:ok, any} | :error
   def fetch(tensor, index)
-  def fetch(%Tensor{}, index) when not(is_number(index)), do: raise Tensor.AccessError, index
+  def fetch(%Tensor{}, index) when not(is_number(index)), do: raise Tensor.AccessError, [key: index]
   def fetch(tensor = %Tensor{dimensions: [current_dimension|_]}, index) when is_number(index) do
     index = (index < 0) && (current_dimension + index) || index
     if index >= current_dimension do
-      raise Tensor.AccessError, index
+      raise Tensor.AccessError, [key: index]
     end
     if vector?(tensor) do # Return item inside vector.
       {:ok, Map.get(tensor.contents, index, tensor.identity)}
@@ -129,7 +129,7 @@ defmodule Tensor do
   @doc """
   Gets the value 
   """
-  @spec fetch(tensor, integer, any) :: any
+  @spec get(tensor, integer, any) :: any
   def get(tensor, key, default) do
     case fetch(tensor, key) do
       {:ok, result} -> result
@@ -168,7 +168,7 @@ defmodule Tensor do
   When `key` is negative, we will look from the right side of the Tensor.
 
   """
-  @spec get_and_update(tensor, key, (value -> {get, value})) :: {get, tensor} when get: var
+  @spec get_and_update(tensor, integer, (any -> {get, any})) :: {get, tensor} when get: var
   def get_and_update(tensor  = %Tensor{dimensions: [current_dimension|_]}, key, fun) do
     key = (key < 0) && (current_dimension + key) || key
     if !is_number(key) || key >= current_dimension do

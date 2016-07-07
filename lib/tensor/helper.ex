@@ -52,4 +52,39 @@ defmodule Tensor.Helper do
     new_map = put_in(map, new_acc, get_in(map, new_acc) || %{})
     do_put_in_path(new_map, keys, val, new_acc)
   end
+
+  @doc """
+  Returns the keywise difference of two maps.
+  So: Only the part of `map_a` is returned that has keys not in `map_b`.
+
+  ## Examples: 
+
+      iex> Tensor.Helper.map_difference(%{a: 1, b: 2, c: 3, d: 4}, %{b: 3, d: 5})
+      %{a: 1, c: 3}
+
+  """
+  def map_difference(map_a, map_b) do
+    Map.keys(map_b)
+    |> Enum.reduce(map_a, fn key, map -> 
+      {_, new_map} = Map.pop(map, key)
+      new_map
+    end)
+  end
+
+  @doc """
+  Returns the keywise difference of two maps.
+  So: Only the part of `map_a` is returned that has keys also in `map_b`.
+
+  ## Examples:
+
+      iex> Tensor.Helper.map_intersection(%{a: 1, b: 2, c: 3, d: 4}, %{b: 3, d: 5})
+      %{b: 2, d: 4}
+  
+  """
+  def map_intersection(map_a, map_b) do
+    diff = map_difference(map_a, map_b)
+    map_difference(map_a, diff)
+  end
+
 end
+

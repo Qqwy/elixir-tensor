@@ -87,30 +87,45 @@ defmodule Tensor do
   @behaviour Access
 
   @doc """
-  Returns a Tensor of one order less, containing all fields for which the highest-order accessor matches.
-  In the case of a Vector, returns the bare value at the given location.
+  Returns a Tensor of one order less, containing all fields for which the highest-order accessor location matches `index`.
 
-  `key` has to be an integer, smaller than the size of the highest dimension of the tensor. 
-  When `key` is negative, we will look from the right side of the Tensor.
+  In the case of a Vector, returns the bare value at the given `index` location.
+  In the case of a Matrix, returns a Vector containing the row at the given column indicated by `index`.
+
+
+  `index` has to be an integer, smaller than the size of the highest dimension of the tensor. 
+  When `index` is negative, we will look from the right side of the Tensor.
 
   This is part of the Access Behaviour implementation for Tensor.
   """
-  def fetch(tensor = %Tensor{dimensions: [current_dimension|_]}, key) do
-    key = (key < 0) && (current_dimension + key) || key
-    if !is_number(key) || key >= current_dimension do
-      raise Tensor.AccessError, key
+  def fetch(tensor, index)
+  def fetch(%Tensor{}, index) when not(is_number(index)), do: raise Tensor.AccessError, index
+  def fetch(tensor = %Tensor{dimensions: [current_dimension|_]}, index) when is_number(index) do
+    index = (index < 0) && (current_dimension + index) || index
+    if index >= current_dimension do
+      raise Tensor.AccessError, index
     end
     if vector?(tensor) do # Return item inside vector.
-      {:ok, Map.get(tensor.contents, key, tensor.identity)}
+      {:ok, Map.get(tensor.contents, index, tensor.identity)}
     else
       # Return lower dimension slice of tensor.
-      contents = Map.get(tensor.contents, key, %{})
+      contents = Map.get(tensor.contents, index, %{})
       if contents do
         dimensions = tl(tensor.dimensions)
         {:ok, %Tensor{identity: tensor.identity, contents: contents, dimensions: dimensions}}
       else 
         :error
       end
+    end
+  end
+
+  @doc """
+  Gets the value 
+  """
+  def get(tensor, key, default) do
+    case fetch(tensor, key) do
+      {:ok, result} -> result
+      :error -> default
     end
   end
 
@@ -373,22 +388,40 @@ defmodule Tensor do
   Transposes the Tensor, by swapping the outermost dimension for the `b`-th dimension.
   """
   def transpose(tensor, dimension_b_index) do
-    sparse_tensor_with_coordinates = 
-      tensor
-      |> Tensor.sparse_map_with_coordinates(fn {coords, v} -> {coords, v} end)
-    transposed_contents = 
-      sparse_tensor_with_coordinates.contents
-      |> flatten_nested_map_of_tuples
-      |> Enum.map(fn {coords, v} -> 
+    # Note that dimensions are not correct as we change them.
+    transposed_tensor = 
+      sparse_contents_map(tensor, fn {coords, v} -> 
         {Helper.swap_elems_in_list(coords, 0, dimension_b_index), v}
       end)
-      |> Enum.into(%{})
-      |> inflate_map
+    # So we recompute them, and return a tensor where the dimensions are updated as well.
     transposed_dimensions = Helper.swap_elems_in_list(tensor.dimensions, 0, dimension_b_index)
-    %Tensor{tensor | dimensions: transposed_dimensions, contents: transposed_contents}
+    %Tensor{tensor | dimensions: transposed_dimensions, contents: transposed_tensor.contents}
   end
 
-  # Turns a map of the format `%{1 => %{2 => %{3 => 4}}}`
+  # Maps over a tensor's contents in a sparse way
+  # 1. deflate contents
+  # 2. map over deflated contents map where each key is a coords list.
+  # 3. inflate contents
+  # returns the new contents for the new tensor 
+  # Note that the new dimensions might be invalid if no special care is taken when they are changed, to keep them within bounds.
+  defp sparse_contents_map(tensor, fun) do
+    new_contents = 
+      tensor
+      |> sparse_tensor_with_coordinates
+      |> Map.fetch!(:contents)
+      |> flatten_nested_map_of_tuples
+      |> Enum.map(fun)
+      |> Enum.into(%{})
+      |> inflate_map
+    %Tensor{tensor | contents: new_contents}
+  end
+
+  # Returns a tensor where all internal values are changed to a `{coordinates, value}` tuples.
+  defp sparse_tensor_with_coordinates(tensor) do
+    Tensor.sparse_map_with_coordinates(tensor, fn {coords, v} -> {coords, v} end)
+  end
+
+  # Turns a map of the format `%{1 => %{2 => %{3 => {[1,2,3], 4} }}}`
   # into [{[1,2,3] => 4}]
   defp flatten_nested_map_of_tuples(nested_map_of_tuples = %{}) do
     values = Map.values(nested_map_of_tuples)
@@ -407,7 +440,45 @@ defmodule Tensor do
     end)
   end
 
+  def merge_with_index(tensor_a = %Tensor{dimensions: dimensions}, tensor_b = %Tensor{dimensions: dimensions}, fun) do
+    a_flat_contents = sparse_tensor_with_coordinates(tensor_a).contents |> flatten_nested_map_of_tuples |> Map.new
+    b_flat_contents = sparse_tensor_with_coordinates(tensor_b).contents |> flatten_nested_map_of_tuples |> Map.new
+    
+    IO.inspect(["flat", a_flat_contents, b_flat_contents])
 
+    a_diff = Tensor.Helper.map_difference(a_flat_contents, b_flat_contents)
+    b_diff = Tensor.Helper.map_difference(b_flat_contents, a_flat_contents)
+    IO.inspect(["diff",a_diff, b_diff])
+    a_overlap = Tensor.Helper.map_difference(a_flat_contents, a_diff)
+    b_overlap = Tensor.Helper.map_difference(b_flat_contents, b_diff)
+    IO.inspect(["overlap", a_overlap, b_overlap])
+
+
+    overlap = Map.merge(a_overlap, b_overlap, fun)
+    IO.inspect(["merged overlap", overlap])
+
+    merged_a_diff = Enum.into(a_diff, %{}, fn {k, v} -> {k, fun.(k, v, tensor_b.identity)} end)
+    merged_b_diff = Enum.into(b_diff, %{}, fn {k, v} -> {k, fun.(k, tensor_a.identity, v)} end)
+    IO.inspect(["merged diff", merged_a_diff, merged_b_diff])
+    
+    new_identity = fun.(:identity, tensor_a.identity, tensor_b.identity)
+    IO.inspect(["new identity", new_identity])
+
+    new_contents = 
+      overlap
+      |> Map.merge(merged_a_diff)
+      |> Map.merge(merged_b_diff)
+      |> inflate_map
+    IO.inspect(["new contents", new_contents])
+
+    %Tensor{dimensions: dimensions, identity: new_identity, contents: new_contents}
+  end
+
+  def merge(tensor_a, tensor_b, fun) do
+    merge_with_index(tensor_a, tensor_b, fn _k, a, b -> fun.(a, b) end)
+  end
+
+  # TODO: Throw custom error if dimensions do not match.
 
 
 
@@ -418,16 +489,53 @@ defmodule Tensor do
     Tensor.map(a, &(&1 + b))
   end
 
-  def mul_number(a = %Tensor{}, b) when is_number(b) do
-    Tensor.map(a, &(&1 * b))
-  end
-
+  @doc """
+  Subtracts the number `b` from all elements in Tensor `a`.
+  """
   def sub_number(a = %Tensor{}, b) when is_number(b) do
     Tensor.map(a, &(&1 - b))
   end
 
+  @doc """
+  Multiplies all elements of Tensor `a` with the number `b`.
+  """
+  def mul_number(a = %Tensor{}, b) when is_number(b) do
+    Tensor.map(a, &(&1 * b))
+  end
+
+  @doc """
+  Divides all elements of Tensor `a` by the number `b`.
+  """
   def div_number(a = %Tensor{}, b) when is_number(b) do
     Tensor.map(a, &(&1 / b))
+  end
+
+  @doc """
+  Elementwise addition of the `tensor_a` and `tensor_b`.
+  """
+  def add_tensor(tensor_a = %Tensor{}, tensor_b = %Tensor{}) do
+    Tensor.merge(tensor_a, tensor_b, fn a, b -> a + b end)
+  end
+
+  @doc """
+  Elementwise substraction of the `tensor_b` from `tensor_a`.
+  """
+  def sub_tensor(tensor_a = %Tensor{}, tensor_b = %Tensor{}) do
+    Tensor.merge(tensor_a, tensor_b, fn a, b -> a - b end)
+  end
+
+  @doc """
+  Elementwise multiplication of the `tensor_a` with `tensor_b`.
+  """
+  def mul_tensor(tensor_a = %Tensor{}, tensor_b = %Tensor{}) do
+    Tensor.merge(tensor_a, tensor_b, fn a, b -> a * b end)
+  end
+
+  @doc """
+  Elementwise division of `tensor_a` by `tensor_b`.
+  """
+  def div_tensor(tensor_a = %Tensor{}, tensor_b = %Tensor{}) do
+    Tensor.merge(tensor_a, tensor_b, fn a, b -> a / b end)
   end
 
 

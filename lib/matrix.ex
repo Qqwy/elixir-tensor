@@ -96,7 +96,7 @@ defmodule Matrix do
   def square?(%Tensor{dimensions: [_,_]}), do: false
 
 
-  def transpose(matrix = %Tensor{dimensions: [w,h]}) do
+  def transpose(matrix = %Tensor{dimensions: [_,_]}) do
     Tensor.transpose(matrix, 1)
     # new_contents = Enum.reduce(matrix.contents, %{}, fn {row_key, row_map}, new_row_map -> 
     #   Enum.reduce(row_map, new_row_map, fn {col_key, value}, new_row_map ->

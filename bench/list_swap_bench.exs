@@ -16,6 +16,10 @@ defmodule ListSwapBench do
     bench "map swap #{@list_length}" do
       Tensor.Helper.map_swap(Enum.to_list(1..@list_length), 1, div(@list_length,2))
     end
+
+    bench "map swap2 #{@list_length}" do
+      Tensor.Helper.map_swap(Enum.to_list(1..@list_length), 1, div(@list_length,2))
+    end
   end
 
 

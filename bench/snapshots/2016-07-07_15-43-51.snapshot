@@ -1,0 +1,18 @@
+duration:1.0;mem stats:false;sys mem stats:false
+module;test;tags;iterations;elapsed
+ListSwapBench	map swap 10		500000	2685319
+ListSwapBench	map swap 100		20000	1994892
+ListSwapBench	map swap 1000		1000	1182608
+ListSwapBench	map swap 2		500000	3094316
+ListSwapBench	map swap2 10		100000	1017891
+ListSwapBench	map swap2 100		20000	1979420
+ListSwapBench	map swap2 1000		1000	1181287
+ListSwapBench	map swap2 2		500000	3094359
+ListSwapBench	new swap 10		500000	1831921
+ListSwapBench	new swap 100		100000	2194436
+ListSwapBench	new swap 1000		10000	2084968
+ListSwapBench	new swap 2		1000000	1329664
+ListSwapBench	old swap 10		500000	1982579
+ListSwapBench	old swap 100		100000	2483612
+ListSwapBench	old swap 1000		10000	2044092
+ListSwapBench	old swap 2		1000000	2410540

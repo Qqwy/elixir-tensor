@@ -77,9 +77,9 @@ This allows for smaller data sizes, as well as faster operations when peforming 
 
 For Tensors, many niceties have been implemented to let them play nicely with other parts of your applications.
 
-### Access Protocol
+### Access Behaviour
 
-Tensors have implementations of the Access Protocol, which let you do:
+Tensors have implementations of the Access Behaviour, which let you do:
 
     iex> require Tensor
     iex> mat = Matrix.new([[1,2],[3,4]], 2,2)

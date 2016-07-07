@@ -15,4 +15,17 @@ defmodule TensorTest do
     assert Tensor.transpose(t3, 2) == t3_transpose_2
   end
 
+  test "tensor merge" do
+    prefixes = Tensor.new(["foo", "bar"], [2], "")
+    postfixes = Tensor.new(["baz", "qux"], [2], "")
+
+    assert Tensor.merge(prefixes, postfixes, fn a, b -> a <> b end) == Tensor.new(["foobaz", "barqux"], [2], "")
+  end
+
+  test "elementwise addition" do
+    mat = Matrix.new([[1,2],[3,4]], 2, 2)
+    mat2 = Matrix.new([[1,1],[1,1]], 2, 2)
+    assert Tensor.add_tensor(mat, mat2) == Matrix.new([[2,3],[4,5]], 2, 2)
+  end
+
 end

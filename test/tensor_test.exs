@@ -22,6 +22,12 @@ defmodule TensorTest do
     assert Tensor.merge(prefixes, postfixes, fn a, b -> a <> b end) == Tensor.new(["foobaz", "barqux"], [2], "")
   end
 
+  test "merging tensors only works when same dimensions" do
+    prefixes = Tensor.new(["foo", "bar"], [2], "")
+    postfixes = Tensor.new(["baz"], [1], "")
+    assert_raise(FunctionClauseError, fn -> Tensor.merge(prefixes, postfixes, fn a, b -> a <> b end) end)
+  end
+
   test "elementwise addition" do
     mat = Matrix.new([[1,2],[3,4]], 2, 2)
     mat2 = Matrix.new([[1,1],[1,1]], 2, 2)

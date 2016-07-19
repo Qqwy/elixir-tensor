@@ -2,7 +2,7 @@ defmodule Matrix do
   defmodule Inspect do
     @doc false
     def inspect(matrix, _opts) do
-      "#Matrix-(#{matrix.dimensions |> Enum.join("×")})#{inspect_contents(matrix)}"
+      "#Matrix-(#{Tensor.dimension_string(matrix)}"
     end
 
     defp inspect_contents(matrix) do

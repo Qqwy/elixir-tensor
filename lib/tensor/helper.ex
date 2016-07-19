@@ -39,19 +39,23 @@ defmodule Tensor.Helper do
     %{1 => %{2 => %{3 => 4}}}
   """
   def put_in_path(map, keys, val) do
-    do_put_in_path(map, keys, val, [])
+    nestable_keys = keys |> Enum.map(&Access.key(&1, %{}))
+    put_in(map, nestable_keys, val)
   end
+  # def put_in_path(map, keys, val) do
+  #   do_put_in_path(map, keys, val, [])
+  # end
 
-  defp do_put_in_path(map, [key], val, acc) do
-    new_acc = acc ++ [key]
-    put_in(map, new_acc, val)
-  end
+  # defp do_put_in_path(map, [key], val, acc) do
+  #   new_acc = acc ++ [key]
+  #   put_in(map, new_acc, val)
+  # end
 
-  defp do_put_in_path(map, [key | keys], val, acc) do
-    new_acc = acc ++ [key]
-    new_map = put_in(map, new_acc, get_in(map, new_acc) || %{})
-    do_put_in_path(new_map, keys, val, new_acc)
-  end
+  # defp do_put_in_path(map, [key | keys], val, acc) do
+  #   new_acc = acc ++ [key]
+  #   new_map = put_in(map, new_acc, get_in(map, new_acc) || %{})
+  #   do_put_in_path(new_map, keys, val, new_acc)
+  # end
 
   @doc """
   Returns the keywise difference of two maps.

@@ -12,7 +12,8 @@ defmodule Tensor do
         2 ->
           Matrix.Inspect.inspect(tensor, opts)
         _ ->
-          "#Tensor-(#{tensor.dimensions |> Enum.join("×")}) (#{inspect tensor.contents})"
+          Tensor.Inspect.inspect(tensor, opts)
+          #"#Tensor-(#{tensor.dimensions |> Enum.join("×")}) (#{inspect tensor.contents})"
       end
     end
   end

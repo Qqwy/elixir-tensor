@@ -140,14 +140,12 @@ This makes it nice to visualize how the Vectors and Matrices look.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
-
-    Add `tensor` to your list of dependencies in `mix.exs`:
+The package can be installed by adding `tensor` to your list of dependencies in `mix.exs`:
 
     ```elixir
     def deps do
       [
-        {:tensor, "~> 0.1.0"}
+        {:tensor, "~> 0.5.0"}
       ]
     end
     ```
@@ -155,9 +153,9 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 ## Roadmap
 
 - [x] Operation to swap any two arbitrary dimensions of a Tensor, a generalized version of `Matrix.transpose`
+- [x] Improve Tensor inspect output.
 - [ ] Move more functionality to Tensor.
 - [ ] Add aliases to common methods of Tensor to Matrix and Vector.
-- [ ] Improve Tensor inspect output.
 - [ ] Ensure that when the identity value is stored, it is not actually stored in a Tensor, so Tensor is kept sparse.
 - [ ] More ways to iterate over vectors/matrices/tensors.
 - [ ] Write (doc)tests for all public functions.

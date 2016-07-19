@@ -10,7 +10,7 @@ defmodule Tensor.Inspect do
     tensor.dimensions |> Enum.join("×")
   end
 
-  def inspect_tensor_contents(tensor = %Tensor{dimensions: dimensions}) when length(dimensions) == 3 do
+  defp inspect_tensor_contents(tensor = %Tensor{dimensions: dimensions}) when length(dimensions) == 3 do
 
     [_, deepness | _] = Tensor.dimensions(tensor)
 
@@ -36,7 +36,7 @@ defmodule Tensor.Inspect do
     
   end
 
-  def inspect_tensor_contents(tensor, is \\ []) do
+  defp inspect_tensor_contents(tensor, is \\ []) do
     tensor
     |> Tensor.slices
     |> Enum.with_index
@@ -54,11 +54,11 @@ defmodule Tensor.Inspect do
     |> Enum.join("\n\n\n")
   end
 
-  def color(deepness, depth) when deepness <= 3, do: [[IO.ANSI.bright, IO.ANSI.white], [IO.ANSI.white], [IO.ANSI.bright, IO.ANSI.black]] |> Enum.fetch!(depth)
-  def color(deepness, depth) when deepness <= 5, do: [[IO.ANSI.bright, IO.ANSI.white], [IO.ANSI.white], [IO.ANSI.bright, IO.ANSI.blue], [IO.ANSI.blue], [IO.ANSI.bright, IO.ANSI.black]] |> Enum.fetch!(depth)
-  def color(deepness, depth) when deepness <= 6, do: [[IO.ANSI.bright, IO.ANSI.white], [IO.ANSI.white], [IO.ANSI.yellow], [IO.ANSI.bright, IO.ANSI.blue], [IO.ANSI.blue], [IO.ANSI.bright, IO.ANSI.black]] |> Enum.fetch!(depth)
-  def color(deepness, depth), do: [IO.ANSI.bright, IO.ANSI.black]
+  defp color(deepness, depth) when deepness <= 3, do: [[IO.ANSI.bright, IO.ANSI.white], [IO.ANSI.white], [IO.ANSI.bright, IO.ANSI.black]] |> Enum.fetch!(depth)
+  defp color(deepness, depth) when deepness <= 5, do: [[IO.ANSI.bright, IO.ANSI.white], [IO.ANSI.white], [IO.ANSI.bright, IO.ANSI.blue], [IO.ANSI.blue], [IO.ANSI.bright, IO.ANSI.black]] |> Enum.fetch!(depth)
+  defp color(deepness, depth) when deepness <= 6, do: [[IO.ANSI.bright, IO.ANSI.white], [IO.ANSI.white], [IO.ANSI.yellow], [IO.ANSI.bright, IO.ANSI.blue], [IO.ANSI.blue], [IO.ANSI.bright, IO.ANSI.black]] |> Enum.fetch!(depth)
+  defp color(deepness, depth), do: [IO.ANSI.white]
 
-  def slice_join_str(deepness) when deepness < 4, do: "\n"
-  def slice_join_str(deepness), do: "\n\n"
+  defp slice_join_str(deepness) when deepness < 4, do: "\n"
+  defp slice_join_str(deepness), do: "\n\n"
 end

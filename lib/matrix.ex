@@ -2,7 +2,10 @@ defmodule Matrix do
   defmodule Inspect do
     @doc false
     def inspect(matrix, _opts) do
-      "#Matrix-(#{Tensor.dimension_string(matrix)}"
+      """
+      #Matrix-(#{Tensor.Inspect.dimension_string(matrix)})
+      #{inspect_contents(matrix)}
+      """
     end
 
     defp inspect_contents(matrix) do
@@ -21,8 +24,8 @@ defmodule Matrix do
       #  |> Enum.join("│\n│")
       top_row_length = String.length(List.first(contents_inspect) || "")
       bottom_row_length = String.length(List.last(contents_inspect) || "")
-      top = "\n┌#{String.pad_trailing("", top_row_length)}┐\n│"
-      bottom = "│\n└#{String.pad_trailing("", bottom_row_length)}┘\n"
+      top = "┌#{String.pad_trailing("", top_row_length)}┐\n│"
+      bottom = "│\n└#{String.pad_trailing("", bottom_row_length)}┘"
       contents_str = contents_inspect |> Enum.join("│\n│")
       "#{top}#{contents_str}#{bottom}"
     end

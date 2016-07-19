@@ -3,7 +3,7 @@ defmodule Vector do
   defmodule Inspect do
     @doc false
     def inspect(vector, _opts) do
-      "#Vector-(#{dimension_string(vector)})#{inspect Vector.to_list(vector)}"
+      "#Vector-(#{Tensor.Inspect.dimension_string(vector)})#{inspect Vector.to_list(vector)}"
     end
   end
 
@@ -11,7 +11,7 @@ defmodule Vector do
     Tensor.new([], [0], 0)
   end
 
-  def new(length_or_list, identity \\ 0)
+  def new(length_or_list_or_range, identity \\ 0)
 
   def new(list, identity) when is_list(list) do
     Tensor.new(list, [Kernel.length(list)], identity)
@@ -19,6 +19,10 @@ defmodule Vector do
 
   def new(length, identity) when is_number(length) do
     Tensor.new([], [length], identity)
+  end
+
+  def new(range = _.._, identity) do
+    new(range |> Enum.to_list, identity)
   end
 
   def length(vector) do

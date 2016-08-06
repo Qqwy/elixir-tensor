@@ -17,8 +17,8 @@ defmodule MatrixTest do
     """
   end
 
-  test "identity" do
-    inspect Matrix.identity(3) =="""
+  test "identity_matrix" do
+    inspect Matrix.identity_matrix(3) =="""
     #Matrix-(3×3)
     ┌                          ┐
     │       1,       0,       0│
@@ -58,9 +58,9 @@ defmodule MatrixTest do
     """
   end
 
-  test "matrix multiplication with the identity results in same matrix" do
+  test "matrix multiplication with the identity matrix results in same matrix" do
     m1 = Matrix.new([[2,3,4],[1,0,0]], 2,3)
-    mid = Matrix.identity(3)
+    mid = Matrix.identity_matrix(3)
 
     assert Matrix.mult(m1, mid) == m1
   end

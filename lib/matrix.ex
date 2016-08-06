@@ -39,7 +39,7 @@ defmodule Matrix do
   def new(list_of_lists \\ [], width, height, identity \\ 0) when width >= 0 and height >= 0 and (width > 0 or height > 0) do
     Tensor.new(list_of_lists, [width, height], identity)
   end
-  
+
   @doc """
   Converts a matrix to a list of lists.
   """
@@ -53,7 +53,7 @@ defmodule Matrix do
   This is a square matrix of size `size` that has the `diag_identity` value (default: `1`) at the diagonal, and the rest is `0`.
   Optionally pass in a third argument, which is the value the rest of the elements in the matrix will be set to.
   """
-  def identity(diag_identity \\ 1, size, rest_identity \\ 0) when size > 0 do
+  def identity_matrix(diag_identity \\ 1, size, rest_identity \\ 0) when size > 0 do
     elems = Stream.cycle([diag_identity]) |> Enum.take(size)
     diag(elems, rest_identity)
   end
@@ -197,45 +197,6 @@ defmodule Matrix do
   end
 
 
-  # Scalar addition
-  def add(matrix, num) when is_number(num) do 
-    Tensor.add_number(matrix, num)
-  end
-
-  @doc """
-  Calculates the Scalar Multiplication or Matrix Multiplication of `a` * `b`.
-
-  If `b` is a number, then a new matrix where all values will be multiplied by `b` are returned.
-
-  if `b` is a matrix, then Matrix Multiplication is performed.
-
-  This will only work as long as the height of `a` is the same as the width of `b`.
-
-  This operation internally builds up a list-of-lists, and finally transforms that back to a matrix.
-  """
-  # Scalar multiplication
-  def mult(matrix, num) when is_number(num) do 
-    Tensor.map(matrix, fn val -> val * num end)
-  end
-
-  # Matrix multiplication
-  # TODO: What to do with identity?
-  def mult(a = %Tensor{dimensions: [m,n]}, b = %Tensor{dimensions: [n,p]}) do
-    b_t = transpose(b)
-    list_of_lists = 
-      for r <- (0..m-1) do
-        for c <- (0..p-1) do
-          Vector.dot_product(a[r], b_t[c])
-        end
-      end
-    Tensor.new(list_of_lists, [m, p])
-  end
-
-
-  def mult(_a = %Tensor{dimensions: [_,_]}, _b = %Tensor{dimensions: [_,_]}) do
-    raise Tensor.ArithmeticError, "Cannot compute dot product if the width of matrix `a` does not match the height of matrix `b`!"
-  end
-
   @doc """
   Returns the sum of the main diagonal of a square matrix.
 
@@ -248,6 +209,72 @@ defmodule Matrix do
   def trace(%Tensor{dimensions: [_,_]}) do
     raise Tensor.ArithmeticError, "Matrix.trace/1 is not defined for non-square matrices!"
   end
+
+
+  @doc """
+  Returns the current identity of matrix  `matrix`.
+  """
+  defdelegate identity(matrix), to: Tensor
+
+  @doc """
+  `true` if `a` is a Matrix.
+  """
+  defdelegate matrix?(a), to: Tensor
+
+  @doc """
+  Returns the element at `index` from `matrix`.
+  """
+  defdelegate fetch(matrix, index), to: Tensor
+
+  @doc """
+  Returns the element at `index` from `matrix`. If `index` is out of bounds, returns `default`.
+  """
+  defdelegate get(matrix, index, default), to: Tensor
+  defdelegate pop(matrix, index, default), to: Tensor
+  defdelegate get_and_update(matrix, index, function), to: Tensor
+
+  defdelegate merge_with_index(matrix_a, matrix_b, function), to: Tensor
+  defdelegate merge(matrix_a, matrix_b, function), to: Tensor
+
+  defdelegate to_list(matrix), to: Tensor
+  defdelegate lift(matrix), to: Tensor
+
+  defdelegate map(matrix, function), to: Tensor
+  defdelegate with_coordinates(matrix), to: Tensor
+  defdelegate sparse_map_with_coordinates(matrix, function), to: Tensor
+  defdelegate dense_map_with_coordinates(matrix, function), to: Tensor
+
+
+  defdelegate add(a, b), to: Tensor
+  defdelegate sub(a, b), to: Tensor
+  defdelegate mul(a, b), to: Tensor
+  defdelegate div(a, b), to: Tensor
+
+  defdelegate add_number(a, b), to: Tensor
+  defdelegate sub_number(a, b), to: Tensor
+  defdelegate mul_number(a, b), to: Tensor
+  defdelegate div_number(a, b), to: Tensor
+
+  @doc """
+  Elementwise addition of matrixs `matrix_a` and `matrix_b`.
+  """
+  defdelegate add_matrix(matrix_a, matrix_b), to: Tensor, as: :add_tensor
+
+  @doc """
+  Elementwise subtraction of `matrix_b` from `matrix_a`.
+  """
+  defdelegate sub_matrix(matrix_a, matrix_b), to: Tensor, as: :sub_tensor
+
+  @doc """
+  Elementwise multiplication of `matrix_a` with `matrix_b`.
+  """
+  defdelegate mul_matrix(matrix_a, matrix_b), to: Tensor, as: :mul_tensor
+
+  @doc """
+  Elementwise division of `matrix_a` and `matrix_b`.
+  Make sure that the identity of `matrix_b` isn't 0 before doing this. 
+  """
+  defdelegate div_matrix(matrix_a, matrix_b), to: Tensor, as: :div_tensor
 
 end
 

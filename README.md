@@ -60,10 +60,25 @@ iex> mat = Matrix.new([[1,2,3],[4,5,6],[7,8,9]],3,3)
 │       4,       5,       6│
 │       7,       8,       9│
 └                          ┘
+iex> Matrix.rotate_clockwise(mat)
+#Matrix-(3×3)
+┌                          ┐
+│       7,       4,       1│
+│       8,       5,       2│
+│       9,       6,       3│
+└                          ┘
 iex> mat[0]
 #Vector-(3)[1, 2, 3]
 iex> mat[2][2]
 9
+iex> Matrix.diag([1,2,3])
+#Matrix-(3×3)
+┌                          ┐
+│       1,       0,       0│
+│       0,       2,       0│
+│       0,       0,       3│
+└                          ┘
+
 iex> Matrix.add(mat, 2)
 #Matrix-(3×3)
 ┌                          ┐
@@ -79,6 +94,7 @@ Matrix.add(mat, mat)
 │       8,      10,      12│
 │      14,      16,      18│
 └                          ┘
+
 ```
 
 The Matrix module lets you:

@@ -154,11 +154,18 @@ The package can be installed by adding `tensor` to your list of dependencies in 
 
 - [x] Operation to swap any two arbitrary dimensions of a Tensor, a generalized version of `Matrix.transpose`
 - [x] Improve Tensor inspect output.
-- [ ] Move more functionality to Tensor.
-- [ ] Add aliases to common methods of Tensor to Matrix and Vector.
-- [ ] Ensure that when the identity value is stored, it is not actually stored in a Tensor, so Tensor is kept sparse.
-- [ ] More ways to iterate over vectors/matrices/tensors.
+- [x] Move more functionality to Tensor.
+- [x] Add Dyalizer specs to all important methods.
+- [ ] Add aliases to common methods of Tensor to:
+  - [x] Vector
+  - [ ] Matrix
+- [x] Ensure that when the identity value is stored, it is not actually stored in a Tensor, so Tensor is kept sparse.
+  - [x] `Tensor.new`
+  - [x] `Tensor.map`
+  - [x] `Tensor.sparse_map_with_coordinates`
+  - [x] `Tensor.dense_map_with_coordinates`
+  - [x] `Tensor.merge`
+  - [x] `Tensor.merge_with_coordinates`
 - [ ] Write (doc)tests for all public functions.
 - [ ] Improve documentation.
-- [ ] Add Dyalizer specs for all methods.
 

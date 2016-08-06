@@ -5,7 +5,6 @@ defmodule Tensor.Helper do
   @doc """
   Swaps the element at position `pos_a` with the element at position `pos_b` inside a list.
 
-  TODO: Move to a separate module with helper functions.
 
   # Examples
 
@@ -31,7 +30,6 @@ defmodule Tensor.Helper do
   This is required, as the normal `put_in` will fail if one of the levels
   indicated by `keys` is not initialized to a map yet.
 
-  TODO: Move to a separate module with helper functions.
 
   ## Examples:
 

@@ -280,19 +280,25 @@ defmodule Tensor do
   @spec map(tensor, (any -> any)) :: tensor
   def map(tensor, fun) do
     new_identity = fun.(tensor.identity)
-    new_contents = do_map(tensor.contents, tensor.dimensions, fun)
+    new_contents = do_map(tensor.contents, tensor.dimensions, fun, new_identity)
     %Tensor{tensor | identity: new_identity, contents: new_contents}
   end
 
-  def do_map(tensor_contents, [_lowest_dimension], fun) do
+  def do_map(tensor_contents, [_lowest_dimension], fun, new_identity) do
     for {k,v} <- tensor_contents, into: %{} do
-      {k, fun.(v)}
+      case fun.(v) do
+        ^new_identity ->
+          {:new_identity, new_identity}
+        other_value ->
+          {k, other_value}
+      end
     end
+    |> Map.delete(:new_identity)
   end
 
-  def do_map(tensor_contents, [_dimension | dimensions], fun) do
+  def do_map(tensor_contents, [_dimension | dimensions], fun, new_identity) do
     for {k,v} <- tensor_contents, into: %{} do
-      {k, do_map(v, dimensions, fun)}
+      {k, do_map(v, dimensions, fun, new_identity)}
     end
   end
 
@@ -345,7 +351,7 @@ defmodule Tensor do
           {:new_identity, new_identity}
         other_value ->
           {k, other_value}
-      end 
+      end
     end
     |> Map.delete(:new_identity) # Values that become the new identity are removed from the sparse map.
   end

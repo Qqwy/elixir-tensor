@@ -139,17 +139,32 @@ defmodule Tensor do
   end
 
   @doc """
-  Returns and removes the value associated with `index` from the tensor.
+  Removes the element associated with `index` from the tensor.
+  Returns a tuple, the first element being the removed element (or `nil` if nothing was removed),
+  the second the updated Tensor with the element removed.
 
   `index` has to be an integer, smaller than the size of the highest dimension of the tensor. 
   When `index` is negative, we will look from the right side of the Tensor.
 
   Notice that because of how Tensors are structured, the structure of the tensor will not change.
-  Values that are popped are reset to the 'identity' value.
+  Elements that are popped are reset to the 'identity' value.
 
   This is part of the Access Behaviour implementation for Tensor.
+
+  ## Examples
+
+      iex> mat = Matrix.new([[1,2],[3,4]], 2,2)   
+      iex> Tensor.pop(mat, 0)   
+      {#Vector-(2)[1, 2],
+       #Matrix-(2×2)
+      ┌                 ┐
+      │       0,       0│
+      │       3,       4│
+      └                 ┘
+      }
+
   """
-  @spec pop(tensor, integer, any) :: %Tensor{}
+  @spec pop(tensor, integer, any) :: { tensor | any, tensor}
   def pop(tensor, index, default \\ nil)
 
   def pop(tensor = %Tensor{}, index, default) when not(is_integer(index)) do

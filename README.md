@@ -4,11 +4,25 @@ The Tensor library adds support for Vectors, Matrixes and higher-dimension Tenso
 These data structures allow easier creation and manipulation of multi-dimensional collections of things.
 One could use them for math, but also to build e.g. board game representations.
 
-The Tensor library builds them in a sparce way.
+The Tensor library builds them in a sparse way.
+
 
 ## Vector
 
 A Vector is a one-dimensional collection of elements. It can be viewed as a list with a known length.
+
+```#elixir
+iex> vec = Vector.new([1,2,3,4,5])
+#Vector-(5)[1, 2, 3, 4, 5]
+iex> vec2 = Vector.new(~w{foo bar baz qux})
+#Vector-(4)["foo", "bar", "baz", "qux"]
+iex> vec2[2]
+"baz"
+iex> Vector.add(vec, 3)
+#Vector-(5)[4, 5, 6, 7, 8]
+iex> Vector.add(vec, vec)
+#Vector-(5)[2, 4, 6, 8, 10]
+```
 
 It is nicer than a list because:
 
@@ -37,6 +51,52 @@ These are highly useful for certain mathematical calculations, but also for e.g.
 
 Matrices are super useful, so there are many helper methods defined to work with them.
 
+```#elixir
+
+iex> mat = Matrix.new([[1,2,3],[4,5,6],[7,8,9]],3,3)
+#Matrix-(3×3)
+┌                          ┐
+│       1,       2,       3│
+│       4,       5,       6│
+│       7,       8,       9│
+└                          ┘
+iex> Matrix.rotate_clockwise(mat)
+#Matrix-(3×3)
+┌                          ┐
+│       7,       4,       1│
+│       8,       5,       2│
+│       9,       6,       3│
+└                          ┘
+iex> mat[0]
+#Vector-(3)[1, 2, 3]
+iex> mat[2][2]
+9
+iex> Matrix.diag([1,2,3])
+#Matrix-(3×3)
+┌                          ┐
+│       1,       0,       0│
+│       0,       2,       0│
+│       0,       0,       3│
+└                          ┘
+
+iex> Matrix.add(mat, 2)
+#Matrix-(3×3)
+┌                          ┐
+│       3,       4,       5│
+│       6,       7,       8│
+│       9,      10,      11│
+└                          ┘
+iex> Matrix.add(mat, mat)
+Matrix.add(mat, mat)
+#Matrix-(3×3)
+┌                          ┐
+│       2,       4,       6│
+│       8,      10,      12│
+│      14,      16,      18│
+└                          ┘
+
+```
+
 The Matrix module lets you:
 
   - creating matrices from lists
@@ -62,9 +122,30 @@ As well as some common math operations
 
 Tensors are implemented using maps internally. This means that read and write access to elements in them is O(log n).
 
-Vectors and Matrixes are also just Tensors, but there are many simple functions that make more sense when used on these data structures, so all of the Vector, Matrix and Tensor modules are existing.
+```#elixir
+iex> tensor = Tensor.new([[[1,2],[3,4],[5,6]],[[7,8],[9,10],[11,12]]], [3,3,2])
+#Tensor(3×3×2)
+       1,       2
+         3,       4
+           5,       6
+       7,       8
+         9,      10
+          11,      12
+       0,       0
+         0,       0
+           0,       0
+iex> tensor[1]
+#Matrix-(3×2)
+┌                 ┐
+│       7,       8│
+│       9,      10│
+│      11,      12│
+└                 ┘
 
-Higher-dimensional Tensors can be created, but many simple functions are only useful on Vectors and Matrixes. Therefore, these have their own modules. 
+
+```
+
+Vector and Matrices are also Tensors. There exist some functions that only make sense when used on these one- or two-dimensional structures. Therefore, the extra Vector and Matrix modules exist.
 
 ## Sparcity
 
@@ -75,7 +156,7 @@ This allows for smaller data sizes, as well as faster operations when peforming 
 
 ## Syntactic Sugar
 
-For Tensors, many niceties have been implemented to let them play nicely with other parts of your applications.
+For Tensors, many sugary protocols and behaviours have been implemented to let them play nicely with other parts of your applications:
 
 ### Access Behaviour
 
@@ -131,10 +212,12 @@ If you want to build up a Vector from a collection of values, or a Matrix from a
 
 ### Inspect Protocol
 
-As can be seen, the Inspect protocol has been overridden for all Tensors.
-This makes it nice to visualize how the Vectors and Matrices look.
+The Inspect protocol has been overridden for all Tensors.
 
-*(for higher-order Tensors the inspect representation will probably change. I'm not sure yet how they can best be represented)*
+- Vectors are shown as a list with the length given.
+- Matrices are shown in a two-dimensional grid, with the dimensions given.
+- Three-dimensional tensors are shown with indentation and colour changes, to show the relationship of the values inside.
+- Four-dimensional Tensors and higher print their lower-dimension values from top-to-bottom.
 
 
 
@@ -145,7 +228,7 @@ The package can be installed by adding `tensor` to your list of dependencies in 
     ```elixir
     def deps do
       [
-        {:tensor, "~> 0.5.0"}
+        {:tensor, "~> 0.7.0"}
       ]
     end
     ```
@@ -154,11 +237,18 @@ The package can be installed by adding `tensor` to your list of dependencies in 
 
 - [x] Operation to swap any two arbitrary dimensions of a Tensor, a generalized version of `Matrix.transpose`
 - [x] Improve Tensor inspect output.
-- [ ] Move more functionality to Tensor.
-- [ ] Add aliases to common methods of Tensor to Matrix and Vector.
-- [ ] Ensure that when the identity value is stored, it is not actually stored in a Tensor, so Tensor is kept sparse.
-- [ ] More ways to iterate over vectors/matrices/tensors.
+- [x] Move more functionality to Tensor.
+- [x] Add Dyalizer specs to all important methods.
+- [ ] Add aliases to common methods of Tensor to:
+  - [x] Vector
+  - [x] Matrix
+- [x] Ensure that when the identity value is stored, it is not actually stored in a Tensor, so Tensor is kept sparse.
+  - [x] `Tensor.new`
+  - [x] `Tensor.map`
+  - [x] `Tensor.sparse_map_with_coordinates`
+  - [x] `Tensor.dense_map_with_coordinates`
+  - [x] `Tensor.merge`
+  - [x] `Tensor.merge_with_coordinates`
 - [ ] Write (doc)tests for all public functions.
 - [ ] Improve documentation.
-- [ ] Add Dyalizer specs for all methods.
 

@@ -206,16 +206,18 @@ defmodule Tensor do
     # TODO: Dimension inference.
     contents = 
       nested_list_of_values
-      |> nested_list_to_nested_map
+      |> nested_list_to_sparse_nested_map(identity)
     %Tensor{contents: contents, identity: identity, dimensions: dimensions}
   end
 
-  defp nested_list_to_nested_map(list) do
+  defp nested_list_to_sparse_nested_map(list, identity) do
     list
     |> Enum.with_index
     |> Enum.reduce(%{}, fn 
       {sublist, index}, map when is_list(sublist) ->
-        Map.put(map, index, nested_list_to_nested_map(sublist))
+        Map.put(map, index, nested_list_to_sparse_nested_map(sublist, identity))
+      {^identity, _index}, map ->
+        map
       {item, index}, map -> 
         Map.put(map, index, item)
     end)
@@ -266,7 +268,6 @@ defmodule Tensor do
     }
   end
 
-  # TODO: Delete all values that are equal to new identity
   @doc """
   Maps `fun` over all values in the Tensor.
 
@@ -306,7 +307,7 @@ defmodule Tensor do
   Returns a new tensor, where all values are `{list_of_coordinates, value}` tuples.
 
   Note that this new tuple is always dense, as the coordinates of all values are different.
-  The identity is left unchanged.
+  The identity is changed to `{:identity, original_identity}`.
   """
   @spec with_coordinates(tensor) :: tensor
   def with_coordinates(tensor = %Tensor{}) do
@@ -324,19 +325,18 @@ defmodule Tensor do
     end
   end
 
-  # TODO: Delete all values that are equal to new identity
   @doc """
   Maps a function over the values in the tensor.
 
   The function will receive a tuple of the form {list_of_coordinates, value}.
 
   Note that only the values that are not the same as the identity will call the function.
-  Finally, the function will be called once to calculate the new identity. This call will be of shape {:identity, value}.
+  The function will be called once to calculate the new identity. This call will be of shape {:identity, value}.
 
   Because of this _sparse/lazy_ invocation, it is important that `fun` is a pure function, as this is the only way
   to guarantee that the results will be the same, regardless of at what place the identity is used.
   """
-  @spec sparse_map_with_coordinates(tensor, ({list, any} -> any)) :: tensor
+  @spec sparse_map_with_coordinates(tensor, ({list | :identity, any} -> any)) :: tensor
   def sparse_map_with_coordinates(tensor, fun) do
     new_identity = fun.({:identity, tensor.identity})
     new_contents = do_sparse_map_with_coordinates(tensor.contents, tensor.dimensions, fun, [], new_identity)
@@ -364,22 +364,28 @@ defmodule Tensor do
 
   @doc """
   Maps a function over _all_ values in the tensor, including all values that are equal to the tensor identity.
+  This is useful to map a function with side effects over the Tensor.
+  
+  The function will be called once to calculate the new identity. This call will be of shape {:identity, value}.
+  After the dense map, all values that are the same as the newly calculated identity are again removed, to make the Tensor sparse again.
 
   The function will receive a tuple of the form {list_of_coordinates, value},
   """
-  @spec dense_map_with_coordinates(tensor, ({list, any} -> any)) :: tensor
+  @spec dense_map_with_coordinates(tensor, ({list | :identity, any} -> any)) :: tensor
   def dense_map_with_coordinates(tensor, fun) do
+    new_identity = fun.({:identity, tensor.identity})
+    tensor = %Tensor{tensor | identity: new_identity}
     do_dense_map_with_coordinates(tensor, tensor.dimensions, fun, [])
   end
 
   def do_dense_map_with_coordinates(tensor, [dimension], fun, coordinates) do
-    for i <- 0..(dimension-1), into: %Tensor{dimensions: [0]} do
+    for i <- 0..(dimension-1), into: %Tensor{dimensions: [0], identity: tensor.identity} do
       fun.({:lists.reverse([i|coordinates]), tensor[i]})
     end
   end
 
   def do_dense_map_with_coordinates(tensor, [dimension | lower_dimensions], fun, coordinates) do
-    for i <- 0..(dimension-1), into: %Tensor{dimensions: [0|lower_dimensions]} do
+    for i <- 0..(dimension-1), into: %Tensor{dimensions: [0|lower_dimensions], identity: tensor.identity} do
       do_dense_map_with_coordinates(tensor[i], lower_dimensions, fun, [i | coordinates])
     end
   end
@@ -471,7 +477,7 @@ defmodule Tensor do
   # into [{[1,2,3] => 4}]
   defp flatten_nested_map_of_tuples(nested_map_of_tuples = %{}) do
     values = Map.values(nested_map_of_tuples)
-    if match?({_,_}, hd(values)) do
+    if values != [] && match?({_,_}, hd(values)) do
       values
     else
       Enum.flat_map(values, &flatten_nested_map_of_tuples/1)
@@ -486,6 +492,10 @@ defmodule Tensor do
     end)
   end
 
+  defmodule DimensionsDoNotMatchError do
+    defexception message: "The dimensions of the two given tensors do not match."
+  end
+
   @doc """
   Merges `tensor_a` with `tensor_b` by calling `fun` for each element that exists in at least one of them:
 
@@ -497,39 +507,44 @@ defmodule Tensor do
 
   An error will be raised unless `tensor_a` and `tensor_b` have the same dimensions.
   """
+  # TODO: Throw custom error if dimensions do not match.
   @spec merge(%Tensor{}, %Tensor{}, ([integer] | :identity, a, a -> any)) :: %Tensor{} when a: any
   def merge_with_index(tensor_a = %Tensor{dimensions: dimensions}, tensor_b = %Tensor{dimensions: dimensions}, fun) do
     a_flat_contents = sparse_tensor_with_coordinates(tensor_a).contents |> flatten_nested_map_of_tuples |> Map.new
     b_flat_contents = sparse_tensor_with_coordinates(tensor_b).contents |> flatten_nested_map_of_tuples |> Map.new
     
-    IO.inspect(["flat", a_flat_contents, b_flat_contents])
+    new_identity = fun.(:identity, tensor_a.identity, tensor_b.identity)
 
     a_diff = Tensor.Helper.map_difference(a_flat_contents, b_flat_contents)
     b_diff = Tensor.Helper.map_difference(b_flat_contents, a_flat_contents)
-    IO.inspect(["diff",a_diff, b_diff])
+
     a_overlap = Tensor.Helper.map_difference(a_flat_contents, a_diff)
     b_overlap = Tensor.Helper.map_difference(b_flat_contents, b_diff)
-    IO.inspect(["overlap", a_overlap, b_overlap])
-
 
     overlap = Map.merge(a_overlap, b_overlap, fun)
-    IO.inspect(["merged overlap", overlap])
 
     merged_a_diff = Enum.into(a_diff, %{}, fn {k, v} -> {k, fun.(k, v, tensor_b.identity)} end)
     merged_b_diff = Enum.into(b_diff, %{}, fn {k, v} -> {k, fun.(k, tensor_a.identity, v)} end)
-    IO.inspect(["merged diff", merged_a_diff, merged_b_diff])
     
-    new_identity = fun.(:identity, tensor_a.identity, tensor_b.identity)
-    IO.inspect(["new identity", new_identity])
 
     new_contents = 
       overlap
       |> Map.merge(merged_a_diff)
       |> Map.merge(merged_b_diff)
       |> inflate_map
-    IO.inspect(["new contents", new_contents])
 
     %Tensor{dimensions: dimensions, identity: new_identity, contents: new_contents}
+    |> make_sparse
+  end
+
+  def merge_with_index(tensor_a, tensor_b, fun) do
+    raise DimensionsDoNotMatchError
+  end
+
+  # Map the identity function over the tensor, to ensure that all values that are equal to the Tensor identity are removed again.
+  # So it is sparse once again.
+  defp make_sparse(tensor = %Tensor{}) do
+    map(tensor, fn x -> x end)
   end
 
 
@@ -549,8 +564,42 @@ defmodule Tensor do
     merge_with_index(tensor_a, tensor_b, fn _k, a, b -> fun.(a, b) end)
   end
 
-  # TODO: Throw custom error if dimensions do not match.
 
+  @doc """
+  Adds number or tensor `b` to tensor `a`.
+  If you know beforehand that `b` will always be a number, use `add_number/2` instead.
+  If you know beforehand that `b` will always be a tensor, use `add_tensor/2` instead.
+  """
+  @spec add(tensor, number | tensor) :: tensor
+  def add(a, b) when is_number(b), do: add_number(a, b)
+  def add(a, b), do: add_tensor(a, b)
+
+  @doc """
+  Subtracts number or tensor `b` to tensor `a`.
+  If you know beforehand that `b` will always be a number, use `sub_number/2` instead.
+  If you know beforehand that `b` will always be a tensor, use `sub_tensor/2` instead.
+  """
+  @spec sub(tensor, number | tensor) :: tensor
+  def sub(a, b) when is_number(b), do: sub_number(a, b)
+  def sub(a, b), do: sub_tensor(a, b)
+
+  @doc """
+  Multiplies number or tensor `b` with tensor `a`.
+  If you know beforehand that `b` will always be a number, use `mul_number/2` instead.
+  If you know beforehand that `b` will always be a tensor, use `mul_tensor/2` instead.
+  """
+  @spec mul(tensor, number | tensor) :: tensor
+  def mul(a, b) when is_number(b), do: mul_number(a, b)
+  def mul(a, b), do: mul_tensor(a, b)
+
+  @doc """
+  Divides tensor `a` by number or tensor `b`.
+  If you know beforehand that `b` will always be a number, use `div_number/2` instead.
+  If you know beforehand that `b` will always be a tensor, use `div_tensor/2` instead.
+  """
+  @spec div(tensor, number | tensor) :: tensor
+  def div(a, b) when is_number(b), do: div_number(a, b)
+  def div(a, b), do: div_tensor(a, b)
 
 
   @doc """
@@ -638,6 +687,7 @@ defmodule Tensor do
   end
 
   defimpl Collectable do
+    # This implementation is sparse. Values that equal the identity are not inserted.
     def into(original ) do
       {original, fn
         # Building a higher-order tensor from lower-order tensors.
@@ -648,9 +698,14 @@ defmodule Tensor do
           new_tensor = %Tensor{tensor | dimensions: new_dimensions, contents: tensor.contents}
           put_in new_tensor, [cur_dimension], elem
         # Inserting values directly into a Vector
-        tensor = %Tensor{dimensions: [length]}, {:cont, elem} -> 
+        tensor = %Tensor{dimensions: [length], identity: identity}, {:cont, elem} -> 
           new_length = length+1
-          new_contents = put_in(tensor.contents, [length], elem)
+          new_contents = 
+            if elem == identity do
+              tensor.contents
+            else
+              put_in(tensor.contents, [length], elem)
+            end
           %Tensor{tensor | dimensions: [new_length], contents: new_contents}
         _, {:cont, elem} -> 
           # Other operations not permitted

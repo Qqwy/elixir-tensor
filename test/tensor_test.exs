@@ -25,14 +25,33 @@ defmodule TensorTest do
   test "merging tensors only works when same dimensions" do
     prefixes = Tensor.new(["foo", "bar"], [2], "")
     postfixes = Tensor.new(["baz"], [1], "")
-    assert_raise(FunctionClauseError, fn -> Tensor.merge(prefixes, postfixes, fn a, b -> a <> b end) end)
+    assert_raise(Tensor.DimensionsDoNotMatchError, fn -> Tensor.merge(prefixes, postfixes, fn a, b -> a <> b end) end)
   end
 
-  test "elementwise addition" do
+  test "Tensor.add_tensor" do
     mat = Matrix.new([[1,2],[3,4]], 2, 2)
     mat2 = Matrix.new([[1,1],[1,1]], 2, 2)
     assert Tensor.add_tensor(mat, mat2) == Matrix.new([[2,3],[4,5]], 2, 2)
   end
+
+  test "Tensor.sub_tensor" do
+    mat = Matrix.new([[1,2],[3,4]], 2, 2)
+    mat2 = Matrix.new([[1,1],[1,1]], 2, 2)
+    assert Tensor.sub_tensor(mat, mat2) == Matrix.new([[0,1],[2,3]], 2, 2)
+  end
+
+  test "Tensor.mul_tensor" do
+    mat = Matrix.new([[1,2],[3,4]], 2, 2)
+    assert Tensor.mul_tensor(mat, mat) == Matrix.new([[1,4],[9,16]], 2, 2)
+  end
+
+  test "Tensor.div_tensor" do
+    mat = Matrix.new([[1,2],[3,4]], 2, 2, 1)
+    assert Tensor.div_tensor(mat, mat) == Matrix.new([[1.0,1.0],[1.0,1.0]], 2, 2, 1.0)
+  end
+
+
+
 
   test "map changes identity" do
     mat = Matrix.new([[1,2],[3,4]],2,2,3)

@@ -37,24 +37,9 @@ defmodule Matrix do
   Optionally pass in a fourth argument, which will be the default values the matrix will be filled with. (default: `0`)
   """
   def new(list_of_lists \\ [], width, height, identity \\ 0) when width >= 0 and height >= 0 and (width > 0 or height > 0) do
-    contents = list_of_lists_to_matrix_map(list_of_lists)
-    %Tensor{identity: identity, dimensions: [width, height], contents: contents}
+    Tensor.new(list_of_lists, [width, height], identity)
   end
-
-  # TODO: Generalize this to tensors?
-  defp list_of_lists_to_matrix_map(list_of_lists) do
-    list_of_lists
-    |> Enum.with_index
-    |> Enum.reduce(%{}, fn {row_list, i}, map -> 
-      row_list
-      |> Enum.with_index
-      |> Enum.reduce(map, fn {value, j}, map -> 
-        map = Map.put_new(map, i, %{})
-        put_in(map, [i,j], value)
-      end)
-    end)
-  end
-
+  
   @doc """
   Converts a matrix to a list of lists.
   """

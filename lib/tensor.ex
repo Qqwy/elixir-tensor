@@ -159,7 +159,6 @@ defmodule Tensor do
     %Tensor{tensor | contents: new_contents}
   end
 
-  # TODO: Ensure that identity values are not stored.
   @doc """
   Gets the value inside `tensor` at key `key`, and calls the passed function `fun` on it, 
   which might update it, or return `:pop` if it ought to be removed.
@@ -267,6 +266,7 @@ defmodule Tensor do
     }
   end
 
+  # TODO: Delete all values that are equal to new identity
   @doc """
   Maps `fun` over all values in the Tensor.
 
@@ -318,6 +318,7 @@ defmodule Tensor do
     end
   end
 
+  # TODO: Delete all values that are equal to new identity
   @doc """
   Maps a function over the values in the tensor.
 
@@ -332,19 +333,26 @@ defmodule Tensor do
   @spec sparse_map_with_coordinates(tensor, ({list, any} -> any)) :: tensor
   def sparse_map_with_coordinates(tensor, fun) do
     new_identity = fun.({:identity, tensor.identity})
-    new_contents = do_sparse_map_with_coordinates(tensor.contents, tensor.dimensions, fun, [])
+    new_contents = do_sparse_map_with_coordinates(tensor.contents, tensor.dimensions, fun, [], new_identity)
+
     %Tensor{tensor | identity: new_identity, contents: new_contents}
   end
 
-  def do_sparse_map_with_coordinates(tensor_contents, [_lowest_dimension], fun, coordinates) do
+  def do_sparse_map_with_coordinates(tensor_contents, [_lowest_dimension], fun, coordinates, new_identity) do
     for {k,v} <- tensor_contents, into: %{} do
-      {k, fun.({:lists.reverse([k|coordinates]), v})}
+      case fun.({:lists.reverse([k|coordinates]), v}) do
+        ^new_identity ->
+          {:new_identity, new_identity}
+        other_value ->
+          {k, other_value}
+      end 
     end
+    |> Map.delete(:new_identity) # Values that become the new identity are removed from the sparse map.
   end
 
-  def do_sparse_map_with_coordinates(tensor_contents, [_current_dimension | lower_dimensions], fun, coordinates) do
+  def do_sparse_map_with_coordinates(tensor_contents, [_current_dimension | lower_dimensions], fun, coordinates, new_identity) do
     for {k,v} <- tensor_contents, into: %{} do
-      {k, do_sparse_map_with_coordinates(v, lower_dimensions, fun, [k|coordinates])}
+      {k, do_sparse_map_with_coordinates(v, lower_dimensions, fun, [k|coordinates], new_identity)}
     end
   end
 

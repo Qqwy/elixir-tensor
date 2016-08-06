@@ -34,4 +34,22 @@ defmodule TensorTest do
     assert Tensor.add_tensor(mat, mat2) == Matrix.new([[2,3],[4,5]], 2, 2)
   end
 
+  test "sparse_map_with_coordinates changes identity" do
+    mat = Matrix.new([[1,2],[3,4]],2,2,3)
+    mat2 = Tensor.sparse_map_with_coordinates(mat, fn {coords, x} -> x*x end)
+    assert mat2.identity == 9
+  end
+
+  test "sparse_map_with_coordinates removes values that have new identity" do
+    mat = Matrix.new([[1,2],[3,4]],2,2,3)
+    mat2 = Tensor.sparse_map_with_coordinates(mat, fn {coords, x} -> x*x end)
+    assert mat2.contents == %{0 => %{0 => 1, 1 => 4}, 1 => %{1 => 16}}
+
+    mat2b = Tensor.sparse_map_with_coordinates(mat, fn {coords, x} -> 1 end)
+    assert mat2b.identity == 1
+    assert mat2b.contents == %{0 => %{}, 1 => %{}}
+
+  end
+
+
 end

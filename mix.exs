@@ -7,6 +7,8 @@ defmodule Tensor.Mixfile do
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     description: description,
+     package: package,
      deps: deps()]
   end
 
@@ -28,7 +30,27 @@ defmodule Tensor.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:dialyxir, "~> 0.3", only: [:dev]}
+      {:dialyxir, "~> 0.3", only: :dev},
+      {:ex_doc, ">= 0.0.0", only: :dev}
     ]
+  end
+
+  defp description do
+    """
+    Tensor adds Vectors, Matrices and Tensors to your application.
+    These are a lot faster than a list (of lists).
+    Indispensable for certain math, and also very useful for games.
+    a Vector, Matrix or Tensor is sparse, so only values that deviate from the identity are stored.
+    """
+  end
+
+  defp package do
+    [# These are the default files included in the package
+     name: :fun_land,
+     files: ["lib", "mix.exs", "README*", "LICENSE*"],
+     maintainers: ["Wiebe-Marten/Qqwy"],
+     licenses: ["MIT"],
+     links: %{"GitHub" => "https://github.com/qqwy/tensor",
+              }]
   end
 end

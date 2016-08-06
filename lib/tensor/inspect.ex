@@ -1,5 +1,5 @@
 defmodule Tensor.Inspect do
-  def inspect(tensor, opts) do
+  def inspect(tensor, _opts) do
     """
     #Tensor(#{dimension_string(tensor)})
     #{inspect_tensor_contents(tensor)}
@@ -57,8 +57,8 @@ defmodule Tensor.Inspect do
   defp color(deepness, depth) when deepness <= 3, do: [[IO.ANSI.bright, IO.ANSI.white], [IO.ANSI.white], [IO.ANSI.bright, IO.ANSI.black]] |> Enum.fetch!(depth)
   defp color(deepness, depth) when deepness <= 5, do: [[IO.ANSI.bright, IO.ANSI.white], [IO.ANSI.white], [IO.ANSI.bright, IO.ANSI.blue], [IO.ANSI.blue], [IO.ANSI.bright, IO.ANSI.black]] |> Enum.fetch!(depth)
   defp color(deepness, depth) when deepness <= 6, do: [[IO.ANSI.bright, IO.ANSI.white], [IO.ANSI.white], [IO.ANSI.yellow], [IO.ANSI.bright, IO.ANSI.blue], [IO.ANSI.blue], [IO.ANSI.bright, IO.ANSI.black]] |> Enum.fetch!(depth)
-  defp color(deepness, depth), do: [IO.ANSI.white]
+  defp color(_deepness, _depth), do: [IO.ANSI.white]
 
   defp slice_join_str(deepness) when deepness < 4, do: "\n"
-  defp slice_join_str(deepness), do: "\n\n"
+  defp slice_join_str(_deepness), do: "\n\n"
 end

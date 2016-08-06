@@ -145,7 +145,7 @@ defmodule Tensor do
   When `key` is negative, we will look from the right side of the Tensor.
 
   Notice that because of how Tensors are structured, the structure of the tensor will not change.
-  Values are basically reset to the 'identity' value.
+  Values that are popped are reset to the 'identity' value.
 
   This is part of the Access Behaviour implementation for Tensor.
   """
@@ -170,14 +170,20 @@ defmodule Tensor do
 
   """
   @spec get_and_update(tensor, integer, (any -> {get, any})) :: {get, tensor} when get: var
-  def get_and_update(tensor  = %Tensor{dimensions: [current_dimension|_]}, key, fun) do
+  def get_and_update(tensor  = %Tensor{dimensions: [current_dimension|_], identity: identity}, key, fun) do
     key = (key < 0) && (current_dimension + key) || key
     if !is_number(key) || key >= current_dimension do
       raise Tensor.AccessError, key
     end
     {result, contents} = 
       if vector? tensor do
-        {result, contents} = Map.get_and_update(tensor.contents, key, fun)
+        {result, contents} = Map.get_and_update(tensor.contents, key, fn current_value ->
+          case fun.(current_value) do
+            {^current_value, ^identity} -> :pop
+            other_result -> other_result
+          end
+        end
+        )
       else
         {:ok, ll_tensor} = fetch(tensor, key)
         {result, ll_tensor2} = fun.(ll_tensor)

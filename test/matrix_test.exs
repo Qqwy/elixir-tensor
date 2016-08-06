@@ -49,7 +49,7 @@ defmodule MatrixTest do
   test "Matrix Multiplication" do 
     m1 = Matrix.new([[2,3,4],[1,0,0]], 2,3)
     m2 = Matrix.new([[0,1000],[1,100],[0,10]], 3,2)
-    assert Matrix.mult(m1, m2) |> inspect == """
+    assert Matrix.product(m1, m2) |> inspect == """
     #Matrix-(2×2)
     ┌                 ┐
     │       3,    2340│
@@ -58,11 +58,11 @@ defmodule MatrixTest do
     """
   end
 
-  test "matrix multiplication with the identity matrix results in same matrix" do
+  test "matrix productiplication with the identity matrix results in same matrix" do
     m1 = Matrix.new([[2,3,4],[1,0,0]], 2,3)
     mid = Matrix.identity_matrix(3)
 
-    assert Matrix.mult(m1, mid) == m1
+    assert Matrix.product(m1, mid) == m1
   end
 
 

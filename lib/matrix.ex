@@ -282,5 +282,32 @@ defmodule Matrix do
   """
   defdelegate div_matrix(matrix_a, matrix_b), to: Tensor, as: :div_tensor
 
+  @doc """
+  Calculates the Matrix Product. This is a new matrix, obtained by multiplying
+  taking the `m` rows of the `m_by_n_matrix`, the `p` columns of the `n_by_p_matrix`
+  and calculating the dot-product (See `Vector.dot_product/2`) of these two `n`-length vectors.
+  The resulting values are stored at position [m][p] in the final matrix.
+
+  There is no way to perform this operation in a sparse way, so it is performed dense.
+  The identities of the two matrices cannot be kept; `nil` is used as identity of the output Matrix.
+  """
+  def product(m_by_n_matrix, n_by_p_matrix)
+  def product(a = %Tensor{dimensions: [m,n]}, b = %Tensor{dimensions: [n,p]}) do
+    b_t = transpose(b)
+    list_of_lists = 
+      for r <- (0..m-1) do
+        for c <- (0..p-1) do
+          Vector.dot_product(a[r], b_t[c])
+        end
+      end
+    Tensor.new(list_of_lists, [m, p])
+  end
+
+
+
+  def product(_a = %Tensor{dimensions: [_,_]}, _b = %Tensor{dimensions: [_,_]}) do
+    raise Tensor.ArithmeticError, "Cannot compute dot product if the width of matrix `a` does not match the height of matrix `b`!"
+  end
+
 end
 

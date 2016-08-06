@@ -103,46 +103,46 @@ defmodule Tensor do
   `index` has to be an integer, smaller than the size of the highest dimension of the tensor. 
   When `index` is negative, we will look from the right side of the Tensor.
 
-  This is part of the Access Behaviour implementation for Tensor.
+  If `index` falls outside of the range of the Tensor's highest dimension, `:error` is returned.
+  See also `get/3`.
+
+  This is part of the `Access` Behaviour implementation for Tensor.
   """
   @spec fetch(tensor, integer) :: {:ok, any} | :error
   def fetch(tensor, index)
-  def fetch(%Tensor{}, index) when not(is_number(index)), do: raise Tensor.AccessError, [key: index]
+  def fetch(%Tensor{}, index) when not(is_number(index)), do: :error
   def fetch(tensor = %Tensor{dimensions: [current_dimension|_]}, index) when is_number(index) do
     index = (index < 0) && (current_dimension + index) || index
-    if index >= current_dimension do
-      raise Tensor.AccessError, [key: index]
-    end
-    if vector?(tensor) do # Return item inside vector.
-      {:ok, Map.get(tensor.contents, index, tensor.identity)}
+    if index >= current_dimension || index < 0 do
+      :error
     else
-      # Return lower dimension slice of tensor.
-      contents = Map.get(tensor.contents, index, %{})
-      if contents do
+      if vector?(tensor) do # Return item inside vector.
+        {:ok, Map.get(tensor.contents, index, tensor.identity)}
+      else
+        # Return lower dimension slice of tensor.
+        contents = Map.get(tensor.contents, index, %{})
         dimensions = tl(tensor.dimensions)
         {:ok, %Tensor{identity: tensor.identity, contents: contents, dimensions: dimensions}}
-      else 
-        :error
       end
     end
   end
 
   @doc """
-  Gets the value 
+  Returns the element at `index` from `tensor`. If `index` is out of bounds, returns `default`.
   """
   @spec get(tensor, integer, any) :: any
-  def get(tensor, key, default) do
-    case fetch(tensor, key) do
+  def get(tensor, index, default) do
+    case fetch(tensor, index) do
       {:ok, result} -> result
       :error -> default
     end
   end
 
   @doc """
-  Returns and removes the value associated with `key` from the tensor.
+  Returns and removes the value associated with `index` from the tensor.
 
-  `key` has to be an integer, smaller than the size of the highest dimension of the tensor. 
-  When `key` is negative, we will look from the right side of the Tensor.
+  `index` has to be an integer, smaller than the size of the highest dimension of the tensor. 
+  When `index` is negative, we will look from the right side of the Tensor.
 
   Notice that because of how Tensors are structured, the structure of the tensor will not change.
   Values that are popped are reset to the 'identity' value.
@@ -150,13 +150,29 @@ defmodule Tensor do
   This is part of the Access Behaviour implementation for Tensor.
   """
   @spec pop(tensor, integer, any) :: %Tensor{}
-  def pop(tensor = %Tensor{dimensions: [current_dimension|_]}, key, default \\ nil) do
-    key = (key < 0) && (current_dimension + key) || key
-    if !is_number(key) || key >= current_dimension do
-      raise Tensor.AccessError, key
+  def pop(tensor, index, default \\ nil)
+
+  def pop(tensor = %Tensor{}, index, default) when not(is_integer(index)) do
+    tensor
+  end
+
+  def pop(tensor = %Tensor{dimensions: [current_dimension|_]}, index, default) do
+    index = (index < 0) && (current_dimension + index) || index
+    if index < 0 || index >= current_dimension do
+      tensor
+    else
+        if vector?(tensor) do
+          {popped_value, new_contents} = Map.pop(tensor.contents, index, default)
+          {popped_value, %Tensor{tensor | contents: new_contents} }
+        else
+          {popped_contents, new_contents} = Map.pop(tensor.contents, index, %{})
+          lower_dimensions = tl(tensor.dimensions)
+          {
+            %Tensor{contents: popped_contents, dimensions: lower_dimensions, identity: tensor.identity}, 
+            %Tensor{tensor | contents: new_contents} 
+          }
+        end
     end
-    new_contents = Map.pop(tensor.contents, key, default)
-    %Tensor{tensor | contents: new_contents}
   end
 
   @doc """

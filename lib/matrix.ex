@@ -59,10 +59,16 @@ defmodule Matrix do
   end
 
   @doc """
-  Creates a square matrix where the diagonal elements are filled with the elements of `list`.
+  Creates a square matrix where the diagonal elements are filled with the elements of the given List or Vector.
   The second argument is an optional `identity` to be used for all elements not part of the diagonal.
   """
-  def diag(list = [_|_], identity \\ 0) when is_list(list) do
+  def diag(list_or_vector, identity \\ 0)
+
+  def diag(vector = %Tensor{dimensions: [length]}, identity) do
+    diag(Tensor.to_list(vector), identity)
+  end
+
+  def diag(list = [_|_], identity) when is_list(list) do
     size = length(list)
     matrix = new([], size, size, identity)
     list

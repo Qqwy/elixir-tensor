@@ -1,7 +1,7 @@
 # Tensor
 
 [![hex.pm version](https://img.shields.io/hexpm/v/tensor.svg)](https://hex.pm/packages/tensor)
-
+[![Build Status](https://travis-ci.org/Qqwy/tensor.svg?branch=master)](https://travis-ci.org/Qqwy/tensor)
 
 The Tensor library adds support for Vectors, Matrixes and higher-dimension Tensors to Elixir.
 These data structures allow easier creation and manipulation of multi-dimensional collections of things.

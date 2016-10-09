@@ -9,22 +9,24 @@ defmodule MatrixTest do
   test "Inspect" do
     matrix = Matrix.new([[1,2],[3,4]], 2,2)
     assert Inspect.inspect(matrix, []) == """
-    #Matrix-(2×2)
+    #Matrix<(2×2)
     ┌                 ┐
     │       1,       2│
     │       3,       4│
     └                 ┘
+    >
     """
   end
 
   test "identity_matrix" do
     inspect Matrix.identity_matrix(3) =="""
-    #Matrix-(3×3)
+    #Matrix<(3×3)
     ┌                          ┐
     │       1,       0,       0│
     │       0,       1,       0│
     │       0,       0,       1│
     └                          ┘
+    >
     """
   end
 
@@ -50,11 +52,12 @@ defmodule MatrixTest do
     m1 = Matrix.new([[2,3,4],[1,0,0]], 2,3)
     m2 = Matrix.new([[0,1000],[1,100],[0,10]], 3,2)
     assert Matrix.product(m1, m2) |> inspect == """
-    #Matrix-(2×2)
+    #Matrix<(2×2)
     ┌                 ┐
     │       3,    2340│
     │       0,    1000│
     └                 ┘
+    >
     """
   end
 
@@ -82,7 +85,7 @@ defmodule MatrixTest do
     matrix = Matrix.new(board_as_list, 8,8)
     assert inspect(matrix) == 
     """
-    #Matrix-(8×8)
+    #Matrix<(8×8)
     ┌                                                                       ┐
     │     "♜",     "♞",     "♝",     "♛",     "♚",     "♝",     "♞",     "♜"│
     │     "♟",     "♟",     "♟",     "♟",     "♟",     "♟",     "♟",     "♟"│
@@ -93,6 +96,7 @@ defmodule MatrixTest do
     │     "♙",     "♙",     "♙",     "♙",     "♙",     "♙",     "♙",     "♙"│
     │     "♖",     "♘",     "♗",     "♕",     "♔",     "♗",     "♘",     "♖"│
     └                                                                       ┘
+    >
     """
 
   end

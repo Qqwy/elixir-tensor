@@ -1,8 +1,9 @@
 defmodule Tensor.Inspect do
   def inspect(tensor, _opts) do
     """
-    #Tensor(#{dimension_string(tensor)})
+    #Tensor<(#{dimension_string(tensor)})
     #{inspect_tensor_contents(tensor)}
+    >
     """
   end
 

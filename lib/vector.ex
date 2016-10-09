@@ -3,7 +3,7 @@ defmodule Vector do
   defmodule Inspect do
     @doc false
     def inspect(vector, _opts) do
-      "#Vector-(#{Tensor.Inspect.dimension_string(vector)})#{inspect Vector.to_list(vector)}"
+      "#Vector<(#{Tensor.Inspect.dimension_string(vector)})#{inspect Vector.to_list(vector)}>"
     end
   end
 

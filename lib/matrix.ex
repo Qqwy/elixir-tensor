@@ -3,8 +3,9 @@ defmodule Matrix do
     @doc false
     def inspect(matrix, _opts) do
       """
-      #Matrix-(#{Tensor.Inspect.dimension_string(matrix)})
+      #Matrix<(#{Tensor.Inspect.dimension_string(matrix)})
       #{inspect_contents(matrix)}
+      >
       """
     end
 
@@ -306,8 +307,36 @@ defmodule Matrix do
 
 
   def product(_a = %Tensor{dimensions: [_,_]}, _b = %Tensor{dimensions: [_,_]}) do
-    raise Tensor.ArithmeticError, "Cannot compute dot product if the width of matrix `a` does not match the height of matrix `b`!"
+    raise Tensor.ArithmeticError, "Cannot compute Matrix.product if the width of matrix `a` does not match the height of matrix `b`!"
   end
+
+  @doc """
+  Calculates the product of `matrix` with `matrix`, `exponent` times.
+  If `exponent` == 0, then the result will be the identity matrix with the same dimensions as the given matrix. 
+
+  This is calculated using the fast [exponentiation by squaring](https://en.wikipedia.org/wiki/Exponentiation_by_squaring) algorithm.
+  """
+  def power(matrix, exponent)
+
+  def power(matrix = %Tensor{dimensions: [a,a]}, negative_number) when negative_number < 0 do
+    product(Matrix.identity_matrix(-1, a), power(matrix, -negative_number))
+  end
+
+  def power(matrix = %Tensor{dimensions: [a,a]}, 0), do: Matrix.identity_matrix(a)
+  def power(matrix = %Tensor{dimensions: [a,a]}, 1), do: matrix
+  
+  def power(matrix = %Tensor{dimensions: [a,a]}, exponent) when rem(exponent, 2) == 0 do
+    power(product(matrix, matrix), Kernel.div(exponent, 2))
+  end
+
+  def power(matrix = %Tensor{dimensions: [a,a]}, exponent) when rem(exponent, 2) == 1 do
+    product(matrix, power(product(matrix, matrix), Kernel.div(exponent, 2)))
+  end
+
+  def power(matrix = %Tensor{dimensions: [_,_]}) do
+    raise Tensor.ArithmeticError, "Cannot compute Matrix.power with non-square matrices"
+  end
+
 
 end
 

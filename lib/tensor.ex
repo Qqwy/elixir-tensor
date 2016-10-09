@@ -155,16 +155,16 @@ defmodule Tensor do
 
       iex> mat = Matrix.new([[1,2],[3,4]], 2,2)   
       iex> {vector, mat2} = Tensor.pop(mat, 0)   
-      iex> inspect(vector)
-      "#Vector-(2)[1, 2]"
+      iex> vector
+      #Vector<(2)[1, 2]>
       iex> inspect(mat2)
-      "#Matrix-(2×2)
+      "#Matrix<(2×2)
       ┌                 ┐
       │       0,       0│
       │       3,       4│
       └                 ┘
+      >
       "
-
   """
   @spec pop(tensor, integer, any) :: { tensor | any, tensor}
   def pop(tensor, index, default \\ nil)

@@ -640,7 +640,7 @@ defmodule Tensor do
   """
   @spec add_number(tensor, number) :: tensor
   def add_number(a = %Tensor{}, b) when is_number(b) do
-    Tensor.map(a, &(&1 + b))
+    Tensor.map(a, &(Numbers.add(&1, b)))
   end
 
   @doc """
@@ -648,7 +648,7 @@ defmodule Tensor do
   """
   @spec sub_number(tensor, number) :: tensor
   def sub_number(a = %Tensor{}, b) when is_number(b) do
-    Tensor.map(a, &(&1 - b))
+    Tensor.map(a, &(Numbers.sub(&1, b)))
   end
 
   @doc """
@@ -656,7 +656,7 @@ defmodule Tensor do
   """
   @spec mul_number(tensor, number) :: tensor
   def mul_number(a = %Tensor{}, b) when is_number(b) do
-    Tensor.map(a, &(&1 * b))
+    Tensor.map(a, &(Numbers.mul(&1, b)))
   end
 
   @doc """
@@ -664,7 +664,7 @@ defmodule Tensor do
   """
   @spec div_number(tensor, number) :: tensor
   def div_number(a = %Tensor{}, b) when is_number(b) do
-    Tensor.map(a, &(&1 / b))
+    Tensor.map(a, &(Numbers.div(&1, b)))
   end
 
   @doc """
@@ -672,7 +672,7 @@ defmodule Tensor do
   """
   @spec add_tensor(tensor, tensor) :: tensor
   def add_tensor(tensor_a = %Tensor{}, tensor_b = %Tensor{}) do
-    Tensor.merge(tensor_a, tensor_b, fn a, b -> a + b end)
+    Tensor.merge(tensor_a, tensor_b, &(Numbers.add(&1, &2)))
   end
 
   @doc """
@@ -680,7 +680,7 @@ defmodule Tensor do
   """
   @spec sub_tensor(tensor, tensor) :: tensor
   def sub_tensor(tensor_a = %Tensor{}, tensor_b = %Tensor{}) do
-    Tensor.merge(tensor_a, tensor_b, fn a, b -> a - b end)
+    Tensor.merge(tensor_a, tensor_b, &(Numbers.sub(&1, &2)))
   end
 
   @doc """
@@ -688,7 +688,7 @@ defmodule Tensor do
   """
   @spec mul_tensor(tensor, tensor) :: tensor
   def mul_tensor(tensor_a = %Tensor{}, tensor_b = %Tensor{}) do
-    Tensor.merge(tensor_a, tensor_b, fn a, b -> a * b end)
+    Tensor.merge(tensor_a, tensor_b, &(Numbers.mul(&1, &2)))
   end
 
   @doc """
@@ -696,7 +696,7 @@ defmodule Tensor do
   """
   @spec div_tensor(tensor, tensor) :: tensor
   def div_tensor(tensor_a = %Tensor{}, tensor_b = %Tensor{}) do
-    Tensor.merge(tensor_a, tensor_b, fn a, b -> a / b end)
+    Tensor.merge(tensor_a, tensor_b, &(Numbers.div(&1, &2)))
   end
 
 

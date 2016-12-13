@@ -29,10 +29,6 @@ defmodule Vector do
     hd(vector.dimensions)
   end
 
-  def to_list(vector) do
-    Tensor.to_list(vector)
-  end
-
   def from_list(list, identity \\ 0) do
     Tensor.new(list, [Kernel.length(list)], identity)
   end

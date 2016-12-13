@@ -169,7 +169,7 @@ defmodule Tensor do
   @spec pop(tensor, integer, any) :: { tensor | any, tensor}
   def pop(tensor, index, default \\ nil)
 
-  def pop(tensor = %Tensor{}, index, default) when not(is_integer(index)) do
+  def pop(tensor = %Tensor{}, index, _default) when not(is_integer(index)) do
     tensor
   end
 
@@ -570,7 +570,7 @@ defmodule Tensor do
     |> make_sparse
   end
 
-  def merge_with_index(tensor_a, tensor_b, fun) do
+  def merge_with_index(_tensor_a, _tensor_b, _fun) do
     raise DimensionsDoNotMatchError
   end
 

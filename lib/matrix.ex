@@ -42,13 +42,6 @@ defmodule Matrix do
   end
 
   @doc """
-  Converts a matrix to a list of lists.
-  """
-  def to_list(matrix) do
-    Tensor.to_list(matrix)
-  end
-
-  @doc """
   Creates an 'identity' matrix.
 
   This is a square matrix of size `size` that has the `diag_identity` value (default: `1`) at the diagonal, and the rest is `0`.
@@ -65,7 +58,7 @@ defmodule Matrix do
   """
   def diag(list_or_vector, identity \\ 0)
 
-  def diag(vector = %Tensor{dimensions: [length]}, identity) do
+  def diag(vector = %Tensor{dimensions: [_length]}, identity) do
     diag(Tensor.to_list(vector), identity)
   end
 
@@ -322,7 +315,7 @@ defmodule Matrix do
     product(Matrix.identity_matrix(-1, a), power(matrix, -negative_number))
   end
 
-  def power(matrix = %Tensor{dimensions: [a,a]}, 0), do: Matrix.identity_matrix(a)
+  def power(%Tensor{dimensions: [a,a]}, 0), do: Matrix.identity_matrix(a)
   def power(matrix = %Tensor{dimensions: [a,a]}, 1), do: matrix
   
   def power(matrix = %Tensor{dimensions: [a,a]}, exponent) when rem(exponent, 2) == 0 do
@@ -333,7 +326,7 @@ defmodule Matrix do
     product(matrix, power(product(matrix, matrix), Kernel.div(exponent, 2)))
   end
 
-  def power(matrix = %Tensor{dimensions: [_,_]}) do
+  def power(%Tensor{dimensions: [_,_]}) do
     raise Tensor.ArithmeticError, "Cannot compute Matrix.power with non-square matrices"
   end
 

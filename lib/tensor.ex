@@ -599,73 +599,118 @@ defmodule Tensor do
 
 
   @doc """
-  Adds number or tensor `b` to tensor `a`.
-  If you know beforehand that `b` will always be a number, use `add_number/2` instead.
-  If you know beforehand that `b` will always be a tensor, use `add_tensor/2` instead.
+  Elementwise addition.
+
+  - If both `a` and `b` are Tensors, the same as calling `add_tensor/2`.
+  - If one of `a` or `b` is any kind of number, the same as calling `add_number/2`.
   """
-  @spec add(tensor, number | tensor) :: tensor
-  def add(a, b) when is_number(b), do: add_number(a, b)
-  def add(a, b), do: add_tensor(a, b)
+  @spec add(tensor , tensor) :: tensor
+  @spec add(Numeric.t, tensor) :: tensor
+  @spec add(tensor, Numeric.t) :: tensor
+  def add(a = %Tensor{}, b = %Tensor{}), do: add_tensor(a, b)
+  def add(a = %Tensor{}, b), do: add_number(a, b)
+  def add(a, b = %Tensor{}), do: add_number(a, b)
 
   @doc """
-  Subtracts number or tensor `b` to tensor `a`.
-  If you know beforehand that `b` will always be a number, use `sub_number/2` instead.
-  If you know beforehand that `b` will always be a tensor, use `sub_tensor/2` instead.
-  """
-  @spec sub(tensor, number | tensor) :: tensor
-  def sub(a, b) when is_number(b), do: sub_number(a, b)
-  def sub(a, b), do: sub_tensor(a, b)
+  Elementwise subtraction.
 
-  @doc """
-  Multiplies number or tensor `b` with tensor `a`.
-  If you know beforehand that `b` will always be a number, use `mul_number/2` instead.
-  If you know beforehand that `b` will always be a tensor, use `mul_tensor/2` instead.
+  - If both `a` and `b` are Tensors, the same as calling `sub_tensor/2`.
+  - If one of `a` or `b` is any kind of number, the same as calling `sub_number/2`.
   """
-  @spec mul(tensor, number | tensor) :: tensor
-  def mul(a, b) when is_number(b), do: mul_number(a, b)
-  def mul(a, b), do: mul_tensor(a, b)
-
-  @doc """
-  Divides tensor `a` by number or tensor `b`.
-  If you know beforehand that `b` will always be a number, use `div_number/2` instead.
-  If you know beforehand that `b` will always be a tensor, use `div_tensor/2` instead.
-  """
-  @spec div(tensor, number | tensor) :: tensor
-  def div(a, b) when is_number(b), do: div_number(a, b)
-  def div(a, b), do: div_tensor(a, b)
+  @spec sub(tensor , tensor) :: tensor
+  @spec sub(Numeric.t, tensor) :: tensor
+  @spec sub(tensor, Numeric.t) :: tensor
+  def sub(a = %Tensor{}, b = %Tensor{}), do: sub_tensor(a, b)
+  def sub(a = %Tensor{}, b), do: sub_number(a, b)
+  def sub(a, b = %Tensor{}), do: sub_number(a, b)
 
 
   @doc """
-  Adds the number `b` to all elements in Tensor `a`.
+  Elementwise multiplication.
+
+  - If both `a` and `b` are Tensors, the same as calling `mul_tensor/2`.
+  - If one of `a` or `b` is any kind of number, the same as calling `mul_number/2`.
   """
-  @spec add_number(tensor, number) :: tensor
-  def add_number(a = %Tensor{}, b) when is_number(b) do
+  @spec mul(tensor , tensor) :: tensor
+  @spec mul(Numeric.t, tensor) :: tensor
+  @spec mul(tensor, Numeric.t) :: tensor
+  def mul(a = %Tensor{}, b = %Tensor{}), do: mul_tensor(a, b)
+  def mul(a = %Tensor{}, b), do: mul_number(a, b)
+  def mul(a, b = %Tensor{}), do: mul_number(a, b)
+
+
+  @doc """
+  Elementwise multiplication.
+
+  - If both `a` and `b` are Tensors, the same as calling `div_tensor/2`.
+  - If one of `a` or `b` is any kind of number, the same as calling `div_number/2`.
+  """
+  @spec div(tensor , tensor) :: tensor
+  @spec div(Numeric.t, tensor) :: tensor
+  @spec div(tensor, Numeric.t) :: tensor
+  def div(a = %Tensor{}, b = %Tensor{}), do: div_tensor(a, b)
+  def div(a = %Tensor{}, b), do: div_number(a, b)
+  def div(a, b = %Tensor{}), do: div_number(a, b)
+
+
+
+  @doc """
+  If the Tensor is the first argument `a`, adds the number `b` to all elements in Tensor `a`.
+
+  If the Tensor is the second argument `b`, adds all numbers in `b` to `a`.
+
+  _(There only is a difference in the outcomes of these two cases if on the underlying numeric type, addition is not commutative)_
+  """
+  @spec add_number(tensor, Numeric.t) :: tensor
+  def add_number(a = %Tensor{}, b) do
     Tensor.map(a, &(Numbers.add(&1, b)))
   end
+  def add_number(a, b = %Tensor{}) do
+    Tensor.map(b, &(Numbers.add(a, &1)))
+  end
+
 
   @doc """
-  Subtracts the number `b` from all elements in Tensor `a`.
+  If the Tensor is the first argument `a`, subtracts the number `b` from all elements in Tensor `a`.
+
+  If the Tensor is the second argument `b`, the result is a Tensor filled with `a` subtracted by all numbers in `b`.
+  _(There only is a difference in the outcomes of these two cases if on the underlying numeric type, multiplication is not commutative)_
   """
-  @spec sub_number(tensor, number) :: tensor
-  def sub_number(a = %Tensor{}, b) when is_number(b) do
+  @spec sub_number(tensor, Numeric.t) :: tensor
+  def sub_number(a = %Tensor{}, b) do
     Tensor.map(a, &(Numbers.sub(&1, b)))
   end
+  def sub_number(a, b = %Tensor{}) do
+    Tensor.map(b, &(Numbers.sub(a, &1)))
+  end
 
   @doc """
-  Multiplies all elements of Tensor `a` with the number `b`.
+  If the Tensor is the first argument `a`, multiplies all elements of Tensor `a` with the number `b`.
+
+  If the Tensor is the second argument `b`, multiplies `a` with all elements of Tensor `b`.
   """
   @spec mul_number(tensor, number) :: tensor
-  def mul_number(a = %Tensor{}, b) when is_number(b) do
+  def mul_number(a = %Tensor{}, b) do
     Tensor.map(a, &(Numbers.mul(&1, b)))
   end
+  def mul_number(a, b = %Tensor{}) do
+    Tensor.map(b, &(Numbers.mul(a, &1)))
+  end
+
 
   @doc """
-  Divides all elements of Tensor `a` by the number `b`.
+  If the Tensor is the first argument `a`, divides all elements of Tensor `a` by the number `b`.
+
+  If the Tensor is the second argument `b`, the result is a Tensor filled with `a` divided by all numbers in Tensor `b`.
   """
   @spec div_number(tensor, number) :: tensor
-  def div_number(a = %Tensor{}, b) when is_number(b) do
+  def div_number(a = %Tensor{}, b) do
     Tensor.map(a, &(Numbers.div(&1, b)))
   end
+  def div_number(a, b = %Tensor{}) do
+    Tensor.map(b, &(Numbers.div(a, &1)))
+  end
+
 
   @doc """
   Elementwise addition of the `tensor_a` and `tensor_b`.

@@ -157,6 +157,12 @@ Only the values that differ from the __identity__ (defaults to `nil`) are actual
 
 This allows for smaller data sizes, as well as faster operations when peforming on, for instance, diagonal matrices.
 
+
+## Numbers
+
+Tensor uses the [Numbers](https://hex.pm/packages/numbers) library for the implementations of elementwise addition/subtraction/multiplication etc.
+This means that you can fill a Tensor with e.g. [`Decimal`](https://hex.pm/packages/decimal)s or [`Ratio`](https://hex.pm/packages/ratio)nals, and it will **Just Work**!
+
 ## Syntactic Sugar
 
 For Tensors, many sugary protocols and behaviours have been implemented to let them play nicely with other parts of your applications:
@@ -242,7 +248,7 @@ The package can be installed by adding `tensor` to your list of dependencies in 
 - [x] Improve Tensor inspect output.
 - [x] Move more functionality to Tensor.
 - [x] Add Dyalizer specs to all important methods.
-- [ ] Add aliases to common methods of Tensor to:
+- [x] Add aliases to common methods of Tensor to:
   - [x] Vector
   - [x] Matrix
 - [x] Ensure that when the identity value is stored, it is not actually stored in a Tensor, so Tensor is kept sparse.
@@ -252,6 +258,7 @@ The package can be installed by adding `tensor` to your list of dependencies in 
   - [x] `Tensor.dense_map_with_coordinates`
   - [x] `Tensor.merge`
   - [x] `Tensor.merge_with_coordinates`
+- [x] Possibility to use any kind of numbers, including custom data types, for `Tensor.add`, `Tensor.sub`, `Tensor.mul`, `Tensor.div` and `Tensor.pow`.
 - [ ] Write (doc)tests for all public functions.
 - [ ] Improve documentation.
 

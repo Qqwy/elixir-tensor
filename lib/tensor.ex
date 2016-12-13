@@ -43,7 +43,10 @@ defmodule Tensor do
     """}
   end
 
+  @behaviour Numeric # Yes, you can use Tensors themselves with Numbers as well!
+
   @opaque tensor :: %Tensor{}
+
 
   @doc """
   Returs true if the tensor is a 1-order Tensor, which is also known as a Vector.
@@ -744,6 +747,20 @@ defmodule Tensor do
     Tensor.merge(tensor_a, tensor_b, &(Numbers.div(&1, &2)))
   end
 
+  @doc """
+  Returns the Tensor where all elements are converted to
+  their absolute values.
+  """
+  def abs(tensor = %Tensor{}) do
+    Tensor.map(tensor, &(Numbers.abs(&1)))
+  end
+
+  @doc """
+  Returns the Tensor where all elements have been negated.
+  """
+  def minus(tensor = %Tensor{}) do
+    Tensor.map(tensor, &(Numbers.minus(&1)))
+  end
 
 
   defimpl Enumerable do

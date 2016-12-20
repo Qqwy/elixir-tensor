@@ -251,7 +251,7 @@ The package can be installed by adding `tensor` to your list of dependencies in 
 - [x] Improve Tensor inspect output.
 - [x] Move more functionality to Tensor.
 - [x] Add Dyalizer specs to all important methods.
-- [x] Add aliases to common methods of Tensor to:
+- Add aliases to common methods of Tensor to:
   - [x] Vector
   - [x] Matrix
 - [x] Ensure that when the identity value is stored, it is not actually stored in a Tensor, so Tensor is kept sparse.
@@ -263,5 +263,5 @@ The package can be installed by adding `tensor` to your list of dependencies in 
   - [x] `Tensor.merge_with_coordinates`
 - [x] Possibility to use any kind of numbers, including custom data types, for `Tensor.add`, `Tensor.sub`, `Tensor.mul`, `Tensor.div` and `Tensor.pow`.
 - [ ] Write (doc)tests for all public functions.
-- [ ] Improve documentation.
+- [x] Improve documentation.
 

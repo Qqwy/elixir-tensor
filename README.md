@@ -237,13 +237,13 @@ The Inspect protocol has been overridden for all Tensors.
 
 The package can be installed by adding `tensor` to your list of dependencies in `mix.exs`:
 
-    ```elixir
-    def deps do
-      [
-        {:tensor, "~> 0.7.0"}
-      ]
-    end
-    ```
+  ```elixir
+  def deps do
+    [
+      {:tensor, "~> 1.0"}
+    ]
+  end
+  ```
 
 ## Roadmap
 

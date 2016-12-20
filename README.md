@@ -163,6 +163,9 @@ This allows for smaller data sizes, as well as faster operations when peforming 
 Tensor uses the [Numbers](https://hex.pm/packages/numbers) library for the implementations of elementwise addition/subtraction/multiplication etc.
 This means that you can fill a Tensor with e.g. [`Decimal`](https://hex.pm/packages/decimal)s or [`Ratio`](https://hex.pm/packages/ratio)nals, and it will **Just Work**!
 
+It even is the case that Tensor itself implements the Numeric behaviour, which means that you can nest Vectors/Matrices/Tensors in your Vectors/Matrices/Tensors, and doing math with them will still work!!
+_(as long as the elements inside the innermost Vector/Matrix/Tensor follow the Numeric behaviour as well, of course.)_
+
 ## Syntactic Sugar
 
 For Tensors, many sugary protocols and behaviours have been implemented to let them play nicely with other parts of your applications:

@@ -3,7 +3,7 @@ defmodule Tensor.Mixfile do
 
   def project do
     [app: :tensor,
-     version: "0.8.1",
+     version: "0.8.2",
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -16,7 +16,12 @@ defmodule Tensor.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger]]
+    [
+      applications: [
+        :logger,
+        :numbers
+      ]
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -32,7 +37,7 @@ defmodule Tensor.Mixfile do
     [
       {:dialyxir, "~> 0.3", only: :dev},
       {:ex_doc, ">= 0.14.0", only: :dev},
-      {:numbers, "~> 0.1.1"}
+      {:numbers, "~> 1.0"}
     ]
   end
 

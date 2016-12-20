@@ -14,7 +14,7 @@ The Tensor library builds them in a sparse way.
 
 A Vector is a one-dimensional collection of elements. It can be viewed as a list with a known length.
 
-```#elixir
+```elixir
 iex> vec = Vector.new([1,2,3,4,5])
 #Vector-(5)[1, 2, 3, 4, 5]
 iex> vec2 = Vector.new(~w{foo bar baz qux})
@@ -54,7 +54,7 @@ These are highly useful for certain mathematical calculations, but also for e.g.
 
 Matrices are super useful, so there are many helper methods defined to work with them.
 
-```#elixir
+```elixir
 
 iex> mat = Matrix.new([[1,2,3],[4,5,6],[7,8,9]],3,3)
 #Matrix-(3×3)
@@ -125,28 +125,26 @@ As well as some common math operations
 
 Tensors are implemented using maps internally. This means that read and write access to elements in them is O(log n).
 
-```#elixir
-iex> tensor = Tensor.new([[[1,2],[3,4],[5,6]],[[7,8],[9,10],[11,12]]], [3,3,2])
-#Tensor(3×3×2)
-       1,       2
-         3,       4
-           5,       6
-       7,       8
-         9,      10
-          11,      12
-       0,       0
-         0,       0
-           0,       0
-iex> tensor[1]
-#Matrix-(3×2)
-┌                 ┐
-│       7,       8│
-│       9,      10│
-│      11,      12│
-└                 ┘
-
-
-```
+  ```elixir
+  iex> tensor = Tensor.new([[[1,2],[3,4],[5,6]],[[7,8],[9,10],[11,12]]], [3,3,2])
+  #Tensor(3×3×2)
+        1,       2
+          3,       4
+            5,       6
+        7,       8
+          9,      10
+            11,      12
+        0,       0
+          0,       0
+            0,       0
+  iex> tensor[1]
+  #Matrix-(3×2)
+  ┌                 ┐
+  │       7,       8│
+  │       9,      10│
+  │      11,      12│
+  └                 ┘
+  ```
 
 Vector and Matrices are also Tensors. There exist some functions that only make sense when used on these one- or two-dimensional structures. Therefore, the extra Vector and Matrix modules exist.
 
@@ -174,18 +172,20 @@ For Tensors, many sugary protocols and behaviours have been implemented to let t
 
 Tensors have implementations of the Access Behaviour, which let you do:
 
-    iex> require Tensor
-    iex> mat = Matrix.new([[1,2],[3,4]], 2,2)
-    iex> mat[0]
-    #Vector-(2)[1, 2]
-    iex> mat[1][1]
-    4
-    iex> put_in mat[1][0], 100
-    #Matrix-(2×2)
-    ┌                 ┐
-    │       1,       2│
-    │     100,       4│
-    └                 ┘
+  ```elixir
+  iex> require Tensor
+  iex> mat = Matrix.new([[1,2],[3,4]], 2,2)
+  iex> mat[0]
+  #Vector-(2)[1, 2]
+  iex> mat[1][1]
+  4
+  iex> put_in mat[1][0], 100
+  #Matrix-(2×2)
+  ┌                 ┐
+  │       1,       2│
+  │     100,       4│
+  └                 ┘
+  ```
 
 It is even possible to use negative indices to look from the end of the Vector/Matrix/Tensor!
 
@@ -211,16 +211,18 @@ If you can think of other nice ways to enumerate over Tensors, please let me kno
 ### Collectable Protocol
 
 If you want to build up a Vector from a collection of values, or a Matrix from a collection of Vectors, (or an order-3 tensor from a collection of Matrices, etc), you can do so by harnessing the power of the Collectable protocol.
-
-    iex> mat = Matrix.new(0,3)
-    iex> v = Vector.new([1,2,3])
-    iex> Enum.into([v,v,v], mat)
-    #Matrix-(3×3)
-    ┌                          ┐
-    │       1,       2,       3│
-    │       1,       2,       3│
-    │       1,       2,       3│
-    └                          ┘
+  
+  ```elixir
+  iex> mat = Matrix.new(0,3)
+  iex> v = Vector.new([1,2,3])
+  iex> Enum.into([v,v,v], mat)
+  #Matrix-(3×3)
+  ┌                          ┐
+  │       1,       2,       3│
+  │       1,       2,       3│
+  │       1,       2,       3│
+  └                          ┘
+  ```
 
 ### Inspect Protocol
 

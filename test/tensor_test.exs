@@ -64,7 +64,7 @@ defmodule TensorTest do
     mat2 = Tensor.map(mat, fn x -> x*x end)
     assert mat2.contents == %{0 => %{0 => 1, 1 => 4}, 1 => %{1 => 16}}
 
-    mat2b = Tensor.map(mat, fn x -> 1 end)
+    mat2b = Tensor.map(mat, fn _x -> 1 end)
     assert mat2b.identity == 1
     assert mat2b.contents == %{0 => %{}, 1 => %{}}
 
@@ -72,16 +72,16 @@ defmodule TensorTest do
 
   test "sparse_map_with_coordinates changes identity" do
     mat = Matrix.new([[1,2],[3,4]],2,2,3)
-    mat2 = Tensor.sparse_map_with_coordinates(mat, fn {coords, x} -> x*x end)
+    mat2 = Tensor.sparse_map_with_coordinates(mat, fn {_coords, x} -> x*x end)
     assert mat2.identity == 9
   end
 
   test "sparse_map_with_coordinates removes values that have new identity" do
     mat = Matrix.new([[1,2],[3,4]],2,2,3)
-    mat2 = Tensor.sparse_map_with_coordinates(mat, fn {coords, x} -> x*x end)
+    mat2 = Tensor.sparse_map_with_coordinates(mat, fn {_coords, x} -> x*x end)
     assert mat2.contents == %{0 => %{0 => 1, 1 => 4}, 1 => %{1 => 16}}
 
-    mat2b = Tensor.sparse_map_with_coordinates(mat, fn {coords, x} -> 1 end)
+    mat2b = Tensor.sparse_map_with_coordinates(mat, fn {_coords, _x} -> 1 end)
     assert mat2b.identity == 1
     assert mat2b.contents == %{0 => %{}, 1 => %{}}
 

@@ -212,7 +212,7 @@ defmodule Tensor do
     end
     {result, contents} = 
       if vector? tensor do
-        {result, contents} = Map.get_and_update(tensor.contents, key, fn current_value ->
+        {_result, _contents} = Map.get_and_update(tensor.contents, key, fn current_value ->
           case fun.(current_value) do
             {^current_value, ^identity} -> :pop
             other_result -> other_result

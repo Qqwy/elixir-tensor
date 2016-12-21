@@ -233,7 +233,14 @@ The Inspect protocol has been overridden for all Tensors.
 - Three-dimensional tensors are shown with indentation and colour changes, to show the relationship of the values inside.
 - Four-dimensional Tensors and higher print their lower-dimension values from top-to-bottom.
 
+### Efficiency
 
+The Tensor package is completely built in Elixir. It is _not_ a wrapper for any functionality written in other languages.
+
+This does mean that if you want to do heavy number crunching, you might want to look for something else.
+
+However, as Tensor uses as _sparse_ tensor implementation, many calculations
+can be much faster than you might expect from a _terse_ tensor implementation, depending on your input data.
 
 ## Installation
 

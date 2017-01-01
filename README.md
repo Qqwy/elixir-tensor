@@ -254,6 +254,12 @@ The package can be installed by adding `tensor` to your list of dependencies in 
   end
   ```
 
+## Changelog
+
+- 1.0.1 - Made documentation of `Matrix.new` more clear. Thank you, @wsmoak !
+- 1.0.0 - First stable version.
+- 0.8   - Most functionality has been implemented.
+
 ## Roadmap
 
 - [x] Operation to swap any two arbitrary dimensions of a Tensor, a generalized version of `Matrix.transpose`

@@ -33,12 +33,12 @@ defmodule Matrix do
   end
 
   @doc """
-  Creates a new matrix of dimensions `width` x `height`.
+  Creates a new matrix of dimensions `height` x `width`.
 
   Optionally pass in a fourth argument, which will be the default values the matrix will be filled with. (default: `0`)
   """
-  def new(list_of_lists \\ [], width, height, identity \\ 0) when width >= 0 and height >= 0 and (width > 0 or height > 0) do
-    Tensor.new(list_of_lists, [width, height], identity)
+  def new(list_of_lists \\ [], height, width, identity \\ 0) when width >= 0 and height >= 0 and (width > 0 or height > 0) do
+    Tensor.new(list_of_lists, [height, width], identity)
   end
 
   @doc """

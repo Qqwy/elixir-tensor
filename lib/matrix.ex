@@ -83,6 +83,14 @@ defmodule Matrix do
   def square?(%Tensor{dimensions: [s,s]}), do: true
   def square?(%Tensor{dimensions: [_,_]}), do: false
 
+  @doc """
+  Returns the `width` of the matrix.
+  """
+  def width(%Tensor{dimensions: [_height, width]}), do: width
+  @doc """
+  Returns the `height` of the matrix.
+  """
+  def height(%Tensor{dimensions: [height, _width]}), do: height
 
   def transpose(matrix = %Tensor{dimensions: [_,_]}) do
     Tensor.transpose(matrix, 1)

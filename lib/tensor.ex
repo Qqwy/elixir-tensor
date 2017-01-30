@@ -380,7 +380,7 @@ defmodule Tensor do
     %Tensor{tensor | identity: new_identity, contents: new_contents}
   end
 
-  def do_sparse_map_with_coordinates(tensor_contents, [_lowest_dimension], fun, coordinates, new_identity) do
+  defp do_sparse_map_with_coordinates(tensor_contents, [_lowest_dimension], fun, coordinates, new_identity) do
     for {k,v} <- tensor_contents, into: %{} do
       case fun.({:lists.reverse([k|coordinates]), v}) do
         ^new_identity ->
@@ -392,16 +392,78 @@ defmodule Tensor do
     |> Map.delete(:new_identity) # Values that become the new identity are removed from the sparse map.
   end
 
-  def do_sparse_map_with_coordinates(tensor_contents, [_current_dimension | lower_dimensions], fun, coordinates, new_identity) do
+  defp do_sparse_map_with_coordinates(tensor_contents, [_current_dimension | lower_dimensions], fun, coordinates, new_identity) do
     for {k,v} <- tensor_contents, into: %{} do
       {k, do_sparse_map_with_coordinates(v, lower_dimensions, fun, [k|coordinates], new_identity)}
     end
   end
 
   @doc """
+  Returns a map where the keys are coordinate lists,
+  and the values are the values stored in the matrix.
+
+  This is a flattened representation of the values that are actually stored
+  inside the sparse tensor.
+
+  This representation could be used to do advanced manipulation of the
+  sparsly-stored tensor elements.
+
+  See `from_sparse_map/2` for the inverse operation.
+
+
+  iex> mat = Matrix.new([[1,2,3],[4,5,6],[7,8,9]], 3,3)
+  iex> Matrix.to_sparse_map(mat)
+  %{[0, 0] => 1, [0, 1] => 2, [0, 2] => 3, [1, 0] => 4, [1, 1] => 5, [1, 2] => 6,
+  [2, 0] => 7, [2, 1] => 8, [2, 2] => 9}
+
+  """
+  def to_sparse_map(tensor) do
+    do_to_sparse_map(tensor.contents, tensor.dimensions, [])
+  end
+
+  defp do_to_sparse_map(tensor_contents, [_lowest_dimension], coordinates) do
+    for {k, v} <- tensor_contents, into: %{} do
+      {:lists.reverse([k | coordinates]), v}
+    end
+  end
+
+  defp do_to_sparse_map(tensor_contents, [_current_dimension | lower_dimensions], coordinates) do
+    Enum.reduce(tensor_contents, %{}, fn {k, v}, result_map ->
+      Map.merge(result_map, do_to_sparse_map(v, lower_dimensions, [k|coordinates]))
+    end)
+  end
+
+  @doc """
+  Converts a sparse map where each key is a coordinate list,
+  and each value is anything to a Tensor with the given dimensions and contents.
+
+  See `to_sparse_map/1` for the inverse operation.
+
+  iex> mat_map = %{[0, 0] => 1, [0, 1] => 2, [0, 2] => 3, [1, 0] => 4, [1, 1] => 5, [1, 2] => 6, [2, 0] => 7, [2, 1] => 8, [2, 2] => 9}
+  iex> mat = Matrix.from_sparse_map(mat_map, 3, 3)
+  iex> mat == Matrix.new([[1,2,3],[4,5,6],[7,8,9]], 3, 3)
+  true
+  """
+  def from_sparse_map(list, dimensions, identity \\ 0) when is_list(dimensions) do
+    new_contents =
+      Enum.reduce(list, %{}, fn {k, v}, tensor_contents ->
+        do_from_sparse_map(v, k, tensor_contents)
+      end)
+    %Tensor{dimensions: dimensions, identity: identity, contents: new_contents}
+  end
+
+  defp do_from_sparse_map(value, [coordinate], tensor_contents) do
+    Map.merge(tensor_contents, %{coordinate => value})
+  end
+
+  defp do_from_sparse_map(value, [current_coordinate | lower_coordinates], tensor_contents) do
+    put_in(tensor_contents[current_coordinate], do_from_sparse_map(value, lower_coordinates, Access.get(tensor_contents, current_coordinate, %{})))
+  end
+
+  @doc """
   Maps a function over _all_ values in the tensor, including all values that are equal to the tensor identity.
   This is useful to map a function with side effects over the Tensor.
-  
+
   The function will be called once to calculate the new identity. This call will be of shape {:identity, value}.
   After the dense map, all values that are the same as the newly calculated identity are again removed, to make the Tensor sparse again.
 
@@ -414,13 +476,13 @@ defmodule Tensor do
     do_dense_map_with_coordinates(tensor, tensor.dimensions, fun, [])
   end
 
-  def do_dense_map_with_coordinates(tensor, [dimension], fun, coordinates) do
+  defp do_dense_map_with_coordinates(tensor, [dimension], fun, coordinates) do
     for i <- 0..(dimension-1), into: %Tensor{dimensions: [0], identity: tensor.identity} do
       fun.({:lists.reverse([i|coordinates]), tensor[i]})
     end
   end
 
-  def do_dense_map_with_coordinates(tensor, [dimension | lower_dimensions], fun, coordinates) do
+  defp do_dense_map_with_coordinates(tensor, [dimension | lower_dimensions], fun, coordinates) do
     for i <- 0..(dimension-1), into: %Tensor{dimensions: [0|lower_dimensions], identity: tensor.identity} do
       do_dense_map_with_coordinates(tensor[i], lower_dimensions, fun, [i | coordinates])
     end

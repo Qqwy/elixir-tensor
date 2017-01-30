@@ -251,6 +251,17 @@ defmodule Matrix do
   defdelegate with_coordinates(matrix), to: Tensor
   defdelegate sparse_map_with_coordinates(matrix, function), to: Tensor
   defdelegate dense_map_with_coordinates(matrix, function), to: Tensor
+  defdelegate to_sparse_map(matrix), to: Tensor
+
+  @doc """
+  Converts a sparse map where each key is a [height, width] coordinate list,
+  and each value is anything to a Matrix with the given height, width and contents.
+
+  See `to_sparse_map/1` for the inverse operation.
+  """
+  def from_sparse_map(matrix, height, width, identity \\ 0) do
+    Tensor.from_sparse_map(matrix, [height, width], identity)
+  end
 
 
   defdelegate add(a, b), to: Tensor

@@ -256,6 +256,7 @@ The package can be installed by adding `tensor` to your list of dependencies in 
 
 ## Changelog
 
+- 1.2.0 - `Tensor.to_sparse_map`, `Tensor.from_sparse_map`. Also, hidden some functions that were supposed to be private but were not yet.
 - 1.1.0 - Add `Matrix.width` and `Matrix.height` functions.
 - 1.0.1 - Made documentation of `Matrix.new` more clear. Thank you, @wsmoak !
 - 1.0.0 - First stable version.

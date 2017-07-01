@@ -1,5 +1,6 @@
 defmodule TensorTest do
   use ExUnit.Case
+  use Tensor
   doctest Tensor
 
   test "the truth" do

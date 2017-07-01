@@ -1,4 +1,6 @@
-defmodule Matrix do
+defmodule Tensor.Matrix do
+  alias Tensor.{Vector, Matrix, Tensor}
+
   defmodule Inspect do
     @doc false
     def inspect(matrix, _opts) do

@@ -1,4 +1,5 @@
-defmodule Tensor.Inspect do
+defmodule Tensor.Tensor.Inspect do
+  alias Tensor.{Tensor, Matrix, Vector}
   def inspect(tensor, _opts) do
     """
     #Tensor<(#{dimension_string(tensor)})
@@ -21,33 +22,33 @@ defmodule Tensor.Inspect do
         slice
         |> Enum.with_index
         |> Enum.map(fn {row, index} ->
-          rowstr = 
+          rowstr =
             row
-            |> Enum.map(fn elem -> 
+            |> Enum.map(fn elem ->
               elem
               |> inspect
               |> String.pad_leading(8)
-            end) 
-            |> Enum.join(",") 
+            end)
+            |> Enum.join(",")
           "#{String.pad_leading("", 2 * index)}#{color(deepness, rem(index, deepness))}#{rowstr}#{IO.ANSI.reset}"
         end)
         |> Enum.join("\n")
     end)
     |> Enum.join(slice_join_str(deepness))
-    
+
   end
 
   defp inspect_tensor_contents(tensor, is \\ []) do
     tensor
     |> Tensor.slices
     |> Enum.with_index
-    |> Enum.map(fn {slice, i} -> 
+    |> Enum.map(fn {slice, i} ->
       IO.inspect(slice.dimensions)
       if Tensor.order(slice) <= 3 do
         """
         #{inspect(:lists.reverse([i|is]))}
         #{inspect_tensor_contents(slice)}
-        """ 
+        """
       else
         inspect_tensor_contents(slice, [i|is])
       end

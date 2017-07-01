@@ -1,4 +1,6 @@
-defmodule Vector do
+defmodule Tensor.Vector do
+  alias Tensor.{Vector, Matrix, Tensor}
+
   import Kernel, except: [length: 1]
   defmodule Inspect do
     @doc false

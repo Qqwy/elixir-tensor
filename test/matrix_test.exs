@@ -1,5 +1,6 @@
 defmodule MatrixTest do
   use ExUnit.Case
+  use Tensor
   doctest Matrix
 
   test "the truth" do

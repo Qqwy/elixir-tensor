@@ -301,7 +301,7 @@ The package can be installed by adding `tensor` to your list of dependencies in 
   ```elixir
   def deps do
     [
-      {:tensor, "~> 1.0"}
+      {:tensor, "~> 2.0"}
     ]
   end
   ```

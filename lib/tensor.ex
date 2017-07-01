@@ -902,7 +902,7 @@ defmodule Tensor do
       {:ok, new_vector}
     end
     # Matrix, Tensor
-    def insert(tensor = %Tensor{dimensions: [cur_dimension | lower_dimensions]}, item = %Tensor{dimensions: [lower_dimensions]}) do
+    def insert(tensor = %Tensor{dimensions: [cur_dimension | lower_dimensions]}, item = %Tensor{dimensions: lower_dimensions}) do
       new_dimension = cur_dimension + 1
       new_contents = put_in(tensor.contents, [cur_dimension], item.contents)
       new_tensor = %Tensor{tensor | dimensions: [new_dimension | lower_dimensions], contents: new_contents}

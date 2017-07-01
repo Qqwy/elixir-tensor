@@ -881,7 +881,7 @@ defmodule Tensor do
       new_dimension = cur_dimension - 1
       highest_elem = tensor[new_dimension]
       new_dimensions = [new_dimension | lower_dimensions]
-      new_contents = Map.delete(new_dimension, tensor.contents)
+      new_contents = Map.delete(tensor.contents, new_dimension)
       new_tensor = %Tensor{tensor | dimensions: new_dimensions, contents: new_contents}
 
       {:ok, {highest_elem, new_tensor}}
@@ -898,7 +898,8 @@ defmodule Tensor do
         else
           put_in(tensor.contents, [length], item)
         end
-      %Tensor{tensor | dimensions: [new_length], contents: new_contents}
+      new_vector = %Tensor{tensor | dimensions: [new_length], contents: new_contents}
+      {:ok, new_vector}
     end
     # Matrix, Tensor
     def insert(tensor = %Tensor{dimensions: [cur_dimension | lower_dimensions]}, item = %Tensor{dimensions: [lower_dimensions]}) do

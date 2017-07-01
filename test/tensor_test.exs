@@ -40,9 +40,9 @@ defmodule TensorTest do
     assert Tensor.sub_tensor(mat, mat2) == Matrix.new([[0,1],[2,3]], 2, 2)
   end
 
-  test "Tensor.mul_tensor" do
+  test "Tensor.mult_tensor" do
     mat = Matrix.new([[1,2],[3,4]], 2, 2)
-    assert Tensor.mul_tensor(mat, mat) == Matrix.new([[1,4],[9,16]], 2, 2)
+    assert Tensor.mult_tensor(mat, mat) == Matrix.new([[1,4],[9,16]], 2, 2)
   end
 
   test "Tensor.div_tensor" do
@@ -87,5 +87,40 @@ defmodule TensorTest do
 
   end
 
+  test "Extractable vector" do
+    x = Vector.new([1,2,3,4])
+    {:ok, {item, x}} = Extractable.extract(x)
+    assert item == 4
+    {:ok, {item, x}} = Extractable.extract(x)
+    assert item == 3
+    {:ok, {item, x}} = Extractable.extract(x)
+    assert item == 2
+    {:ok, {item, x}} = Extractable.extract(x)
+    assert item == 1
+    assert Extractable.extract(x) == {:error, :empty}
+  end
 
+  test "Extractable matrix" do
+    x = Matrix.new([[1,2],[3,4]], 2, 2)
+    {:ok, {item, x}} = Extractable.extract(x)
+    assert item == Vector.new([3,4])
+    {:ok, {item, x}} = Extractable.extract(x)
+    assert item == Vector.new([1,2])
+    assert Extractable.extract(x) == {:error, :empty}
+  end
+
+  test "Insertable vector" do
+    x = Vector.new()
+    {:ok, x} = Insertable.insert(x, 10)
+    {:ok, x} = Insertable.insert(x, 20)
+    {:ok, x} = Insertable.insert(x, 30)
+    assert x == Vector.new([10, 20, 30])
+  end
+
+  test "Insertable matrix" do
+    x = Matrix.new(0, 2)
+    {:ok, x} = Insertable.insert(x, Vector.new([1, 2]))
+    {:ok, x} = Insertable.insert(x, Vector.new([3, 4]))
+    assert x == Matrix.new([[1,2],[3,4]], 2, 2)
+  end
 end

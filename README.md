@@ -237,6 +237,54 @@ The Inspect protocol has been overridden for all Tensors.
 - Three-dimensional tensors are shown with indentation and colour changes, to show the relationship of the values inside.
 - Four-dimensional Tensors and higher print their lower-dimension values from top-to-bottom.
 
+### FunLand.Reducable Semiprotocol 
+
+This is a lightweight version of the Enumerable protocol, with a simple implementation.
+
+```
+    iex> use Tensor
+    iex> x = Vector.new([1,2,3,4])
+    iex> FunLand.Reducable.reduce(x, 0, fn x, acc -> acc + x end)
+    10
+```
+
+### Extractable Protocol
+
+This allows you to extract a single element per time from the Vector/Tensor/Matrix.
+Because it is fastest to extract the elements with the highest index, these are returned first.
+
+```elixir
+
+    iex> use Tensor
+    iex> x = Matrix.new([[1,2],[3,4]], 2, 2)
+    iex> {:ok, {item, x}} = Extractable.extract(x)
+    iex> item
+    #Vector<(2)[3, 4]>
+    iex> {:ok, {item, x}} = Extractable.extract(x)
+    iex> item
+    #Vector<(2)[1, 2]>
+    iex> Extractable.extract(x)
+    {:error, :empty}
+```
+
+### Insertable Protocol
+
+This allows you ti insert a single element per time into the Vector/Tensor/Matrix.
+Insertion always happens at the highest index location. (The size of the highest dimension of the Tensor is increased by one)
+
+```elixir
+    iex> use Tensor
+    iex> x = Matrix.new(0, 2)
+    iex> {:ok, x} = Insertable.insert(x, Vector.new([1, 2]))
+    iex> {:ok, x} = Insertable.insert(x, Vector.new([3, 4]))
+    #Matrix<(2×2)
+    ┌                 ┐
+    │       1,       2│
+    │       3,       4│
+    └                 ┘
+    >
+```
+
 ### Efficiency
 
 The Tensor package is completely built in Elixir. It is _not_ a wrapper for any functionality written in other languages.

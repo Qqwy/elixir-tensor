@@ -124,4 +124,9 @@ defmodule TensorTest do
     {:ok, x} = Insertable.insert(x, Vector.new([3, 4]))
     assert x == Matrix.new([[1,2],[3,4]], 2, 2)
   end
+
+  test "Reducable vector" do
+    x = Vector.new([1,2,3,4])
+    assert FunLand.Reducable.reduce(x, 0, fn x, acc -> acc + x end) == 10
+  end
 end

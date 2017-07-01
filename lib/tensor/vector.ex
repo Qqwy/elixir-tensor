@@ -1,5 +1,5 @@
 defmodule Tensor.Vector do
-  alias Tensor.{Vector, Matrix, Tensor}
+  alias Tensor.{Vector, Tensor}
 
   import Kernel, except: [length: 1]
   defmodule Inspect do

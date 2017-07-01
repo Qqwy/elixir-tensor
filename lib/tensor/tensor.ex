@@ -43,7 +43,7 @@ defmodule Tensor.Tensor do
     """}
   end
 
-  @behaviour Numeric # Yes, you can use Tensors themselves with Numbers as well!
+  @behaviour Numbers.Numeric # Yes, you can use Tensors themselves with Numbers as well!
 
   @opaque tensor :: %Tensor{}
 
@@ -844,6 +844,15 @@ defmodule Tensor.Tensor do
     defp do_reduce([h | t], {:cont, acc}, fun),    do: do_reduce(t, fun.(h, acc), fun)
   end
 
+  use FunLand.Reducable
+  def reduce(tensor, acc, fun) do
+    case Extractable.extract(tensor) do
+      {:error, :empty} -> acc
+      {:ok, {item, rest}} ->
+        reduce(rest, fun.(item, acc), fun)
+    end
+  end
+
   defimpl Collectable do
     # This implementation is sparse. Values that equal the identity are not inserted.
     def into(original ) do
@@ -875,7 +884,7 @@ defmodule Tensor.Tensor do
   end
 
   defimpl Extractable do
-    def extract(tensor = %Tensor{dimensions: [0 | _lower_dimensions]}) do
+    def extract(%Tensor{dimensions: [0 | _lower_dimensions]}) do
       {:error, :empty}
     end
     def extract(tensor = %Tensor{dimensions: [cur_dimension | lower_dimensions]}) do
@@ -909,7 +918,7 @@ defmodule Tensor.Tensor do
       new_tensor = %Tensor{tensor | dimensions: [new_dimension | lower_dimensions], contents: new_contents}
       {:ok, new_tensor}
     end
-    def insert(tensor = %Tensor{}, item = _) do
+    def insert(%Tensor{}, _) do
       {:error, :invalid_item_type}
     end
   end

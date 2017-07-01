@@ -1,5 +1,5 @@
 defmodule Tensor.Tensor.Inspect do
-  alias Tensor.{Tensor, Matrix, Vector}
+  alias Tensor.{Tensor}
   def inspect(tensor, _opts) do
     """
     #Tensor<(#{dimension_string(tensor)})

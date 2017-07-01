@@ -15,6 +15,7 @@ The Tensor library builds them in a sparse way.
 A Vector is a one-dimensional collection of elements. It can be viewed as a list with a known length.
 
 ```elixir
+iex> use Tensor
 iex> vec = Vector.new([1,2,3,4,5])
 #Vector-(5)[1, 2, 3, 4, 5]
 iex> vec2 = Vector.new(~w{foo bar baz qux})
@@ -56,6 +57,7 @@ Matrices are super useful, so there are many helper methods defined to work with
 
 ```elixir
 
+iex> use Tensor
 iex> mat = Matrix.new([[1,2,3],[4,5,6],[7,8,9]],3,3)
 #Matrix-(3×3)
 ┌                          ┐
@@ -126,6 +128,7 @@ As well as some common math operations
 Tensors are implemented using maps internally. This means that read and write access to elements in them is O(log n).
 
   ```elixir
+  iex> use Tensor
   iex> tensor = Tensor.new([[[1,2],[3,4],[5,6]],[[7,8],[9,10],[11,12]]], [3,3,2])
   #Tensor(3×3×2)
         1,       2
@@ -173,7 +176,7 @@ For Tensors, many sugary protocols and behaviours have been implemented to let t
 Tensors have implementations of the Access Behaviour, which let you do:
 
   ```elixir
-  iex> require Tensor
+  iex> use Tensor
   iex> mat = Matrix.new([[1,2],[3,4]], 2,2)
   iex> mat[0]
   #Vector-(2)[1, 2]
@@ -213,6 +216,7 @@ If you can think of other nice ways to enumerate over Tensors, please let me kno
 If you want to build up a Vector from a collection of values, or a Matrix from a collection of Vectors, (or an order-3 tensor from a collection of Matrices, etc), you can do so by harnessing the power of the Collectable protocol.
   
   ```elixir
+  iex> use Tensor
   iex> mat = Matrix.new(0,3)
   iex> v = Vector.new([1,2,3])
   iex> Enum.into([v,v,v], mat)
@@ -256,7 +260,11 @@ The package can be installed by adding `tensor` to your list of dependencies in 
 
 ## Changelog
 
-- 2.0.0 - Increase version number of `Numbers`. Backwards-incompatible change, as `mult` is now used instead of `mul` for multiplication. Also introduces `FunLand.Mappable`, `Extractable` and `Insertable` protocol implementations.
+- 2.0.0 - Many changes, including Backwards incompatible ones:
+  - Increase version number of `Numbers`. Backwards-incompatible change, as `mult` is now used instead of `mul` for multiplication. 
+  - Moving `Tensor`, `Vector` and `Matrix` all under the `Tensor` namespace (so they now are `Tensor.Tensor`, `Tensor.Vector`, `Tensor.Matrix`), to follow the HexPM rules of library management (which is, only use one single top-level module name). Write `use Tensor` to alias the modules in your code.
+  - Also introduces `FunLand.Mappable`, `FunLand.Reducable`, `Extractable` and `Insertable` protocol implementations.
+  
 - 1.2.0 - `Tensor.to_sparse_map`, `Tensor.from_sparse_map`. Also, hidden some functions that were supposed to be private but were not yet.
 - 1.1.0 - Add `Matrix.width` and `Matrix.height` functions.
 - 1.0.1 - Made documentation of `Matrix.new` more clear. Thank you, @wsmoak !

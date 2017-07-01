@@ -87,12 +87,12 @@ defmodule Vector do
 
   defdelegate add(a, b), to: Tensor
   defdelegate sub(a, b), to: Tensor
-  defdelegate mul(a, b), to: Tensor
+  defdelegate mult(a, b), to: Tensor
   defdelegate div(a, b), to: Tensor
 
   defdelegate add_number(a, b), to: Tensor
   defdelegate sub_number(a, b), to: Tensor
-  defdelegate mul_number(a, b), to: Tensor
+  defdelegate mult_number(a, b), to: Tensor
   defdelegate div_number(a, b), to: Tensor
 
   @doc """
@@ -108,7 +108,7 @@ defmodule Vector do
   @doc """
   Elementwise multiplication of `vector_a` with `vector_b`.
   """
-  defdelegate mul_vector(vector_a, vector_b), to: Tensor, as: :mul_tensor
+  defdelegate mult_vector(vector_a, vector_b), to: Tensor, as: :mult_tensor
 
   @doc """
   Elementwise division of `vector_a` and `vector_b`.

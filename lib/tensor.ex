@@ -1,11 +1,10 @@
 defmodule Tensor do
   alias Tensor.Helper
 
-
   defstruct [:identity, contents: %{}, dimensions: [1]]
 
   defimpl Inspect do
-    def inspect(tensor, opts) do 
+    def inspect(tensor, opts) do
       case length(tensor.dimensions) do
         1 ->
           Vector.Inspect.inspect(tensor, opts)
@@ -30,7 +29,7 @@ defmodule Tensor do
     end
   end
 
-  defmodule CollectableError do 
+  defmodule CollectableError do
     defexception [:message]
 
     def exception(value), do: %CollectableError{message: """
@@ -39,7 +38,7 @@ defmodule Tensor do
     and that they have the same dimensions (save for the highest one).
 
     For instance, you can only add vectors of length 3 to a n×3 matrix,
-    and matrices of size 2×4 can only be added to an order-3 tensor of size n×2×3 
+    and matrices of size 2×4 can only be added to an order-3 tensor of size n×2×3
     """}
   end
 
@@ -78,18 +77,18 @@ defmodule Tensor do
   Returns the dimensions of the tensor.
   """
   @spec dimensions(tensor) :: [non_neg_integer]
-  def dimensions(tensor = %Tensor{}) do 
+  def dimensions(tensor = %Tensor{}) do
     tensor.dimensions
   end
 
   @doc """
   Returns the identity, the default value a tensor inserts at a position when no other value is set.
 
-  This is mostly used internally, and is used to allow Tensors to take a lot less space because 
+  This is mostly used internally, and is used to allow Tensors to take a lot less space because
   only values that are not `empty` have to be stored.
   """
   @spec identity(tensor) :: any
-  def identity(tensor = %Tensor{}) do 
+  def identity(tensor = %Tensor{}) do
     tensor.identity
   end
 
@@ -99,11 +98,11 @@ defmodule Tensor do
   @doc """
   Returns a Tensor of one order less, containing all fields for which the highest-order accessor location matches `index`.
 
-  In the case of a Vector, returns the bare value at the given `index` location.
+  In the case of a Vector, returns the simple value at the given `index` location.
   In the case of a Matrix, returns a Vector containing the row at the given column indicated by `index`.
 
 
-  `index` has to be an integer, smaller than the size of the highest dimension of the tensor. 
+  `index` has to be an integer, smaller than the size of the highest dimension of the tensor.
   When `index` is negative, we will look from the right side of the Tensor.
 
   If `index` falls outside of the range of the Tensor's highest dimension, `:error` is returned.
@@ -146,7 +145,7 @@ defmodule Tensor do
   Returns a tuple, the first element being the removed element (or `nil` if nothing was removed),
   the second the updated Tensor with the element removed.
 
-  `index` has to be an integer, smaller than the size of the highest dimension of the tensor. 
+  `index` has to be an integer, smaller than the size of the highest dimension of the tensor.
   When `index` is negative, we will look from the right side of the Tensor.
 
   Notice that because of how Tensors are structured, the structure of the tensor will not change.
@@ -156,8 +155,8 @@ defmodule Tensor do
 
   ## Examples
 
-      iex> mat = Matrix.new([[1,2],[3,4]], 2,2)   
-      iex> {vector, mat2} = Tensor.pop(mat, 0)   
+      iex> mat = Matrix.new([[1,2],[3,4]], 2,2)
+      iex> {vector, mat2} = Tensor.pop(mat, 0)
       iex> vector
       #Vector<(2)[1, 2]>
       iex> inspect(mat2)
@@ -188,19 +187,19 @@ defmodule Tensor do
           {popped_contents, new_contents} = Map.pop(tensor.contents, index, %{})
           lower_dimensions = tl(tensor.dimensions)
           {
-            %Tensor{contents: popped_contents, dimensions: lower_dimensions, identity: tensor.identity}, 
-            %Tensor{tensor | contents: new_contents} 
+            %Tensor{contents: popped_contents, dimensions: lower_dimensions, identity: tensor.identity},
+            %Tensor{tensor | contents: new_contents}
           }
         end
     end
   end
 
   @doc """
-  Gets the value inside `tensor` at key `key`, and calls the passed function `fun` on it, 
+  Gets the value inside `tensor` at key `key`, and calls the passed function `fun` on it,
   which might update it, or return `:pop` if it ought to be removed.
 
 
-  `key` has to be an integer, smaller than the size of the highest dimension of the tensor. 
+  `key` has to be an integer, smaller than the size of the highest dimension of the tensor.
   When `key` is negative, we will look from the right side of the Tensor.
 
   """
@@ -210,7 +209,7 @@ defmodule Tensor do
     if !is_number(key) || key >= current_dimension do
       raise Tensor.AccessError, key
     end
-    {result, contents} = 
+    {result, contents} =
       if vector? tensor do
         {_result, _contents} = Map.get_and_update(tensor.contents, key, fn current_value ->
           case fun.(current_value) do
@@ -240,7 +239,7 @@ defmodule Tensor do
   def new(nested_list_of_values, dimensions \\ nil, identity \\ 0) do
     dimensions = dimensions || [length(nested_list_of_values)]
     # TODO: Dimension inference.
-    contents = 
+    contents =
       nested_list_of_values
       |> nested_list_to_sparse_nested_map(identity)
     %Tensor{contents: contents, identity: identity, dimensions: dimensions}
@@ -249,12 +248,12 @@ defmodule Tensor do
   defp nested_list_to_sparse_nested_map(list, identity) do
     list
     |> Enum.with_index
-    |> Enum.reduce(%{}, fn 
+    |> Enum.reduce(%{}, fn
       {sublist, index}, map when is_list(sublist) ->
         Map.put(map, index, nested_list_to_sparse_nested_map(sublist, identity))
       {^identity, _index}, map ->
         map
-      {item, index}, map -> 
+      {item, index}, map ->
         Map.put(map, index, item)
     end)
   end
@@ -304,6 +303,7 @@ defmodule Tensor do
     }
   end
 
+  use FunLand.Mappable
   @doc """
   Maps `fun` over all values in the Tensor.
 
@@ -539,8 +539,8 @@ defmodule Tensor do
   @spec transpose(tensor, non_neg_integer) :: tensor
   def transpose(tensor, dimension_b_index) do
     # Note that dimensions are not correct as we change them.
-    transposed_tensor = 
-      sparse_contents_map(tensor, fn {coords, v} -> 
+    transposed_tensor =
+      sparse_contents_map(tensor, fn {coords, v} ->
         {Helper.swap_elems_in_list(coords, 0, dimension_b_index), v}
       end)
     # So we recompute them, and return a tensor where the dimensions are updated as well.
@@ -552,10 +552,10 @@ defmodule Tensor do
   # 1. deflate contents
   # 2. map over deflated contents map where each key is a coords list.
   # 3. inflate contents
-  # returns the new contents for the new tensor 
+  # returns the new contents for the new tensor
   # Note that the new dimensions might be invalid if no special care is taken when they are changed, to keep them within bounds.
   defp sparse_contents_map(tensor, fun) do
-    new_contents = 
+    new_contents =
       tensor
       |> sparse_tensor_with_coordinates
       |> Map.fetch!(:contents)
@@ -600,7 +600,7 @@ defmodule Tensor do
   - When a certain location is occupied in `tensor_a`, `fun` is called using `tensor_b`'s identity, with three arguments: `coords_list, tensor_a_val, tensor_b_identity`
   - When a certain location is occupied in `tensor_b`, `fun` is called using `tensor_a`'s identity, with three arguments: `coords_list, tensor_a_identity, tensor_b_val`
   - When a certain location is occupied in both `tensor_a` and `tensor_b`, `fun` is called with three arguments: `coords_list, tensor_a_val, tensor_b_val`
-  
+
   Finally, `fun` is invoked one last time, with `:identity, tensor_a_identity, tensor_b_identity`.
 
   An error will be raised unless `tensor_a` and `tensor_b` have the same dimensions.
@@ -610,7 +610,7 @@ defmodule Tensor do
   def merge_with_index(tensor_a = %Tensor{dimensions: dimensions}, tensor_b = %Tensor{dimensions: dimensions}, fun) do
     a_flat_contents = sparse_tensor_with_coordinates(tensor_a).contents |> flatten_nested_map_of_tuples |> Map.new
     b_flat_contents = sparse_tensor_with_coordinates(tensor_b).contents |> flatten_nested_map_of_tuples |> Map.new
-    
+
     new_identity = fun.(:identity, tensor_a.identity, tensor_b.identity)
 
     a_diff = Tensor.Helper.map_difference(a_flat_contents, b_flat_contents)
@@ -623,9 +623,9 @@ defmodule Tensor do
 
     merged_a_diff = Enum.into(a_diff, %{}, fn {k, v} -> {k, fun.(k, v, tensor_b.identity)} end)
     merged_b_diff = Enum.into(b_diff, %{}, fn {k, v} -> {k, fun.(k, tensor_a.identity, v)} end)
-    
 
-    new_contents = 
+
+    new_contents =
       overlap
       |> Map.merge(merged_a_diff)
       |> Map.merge(merged_b_diff)
@@ -652,7 +652,7 @@ defmodule Tensor do
   - When a certain location is occupied in `tensor_a`, `fun` is called using `tensor_b`'s identity, with two arguments: `tensor_a_val, tensor_b_identity`
   - When a certain location is occupied in `tensor_b`, `fun` is called using `tensor_a`'s identity, with two arguments: `tensor_a_identity, tensor_b_val`
   - When a certain location is occupied in both `tensor_a` and `tensor_b`, `fun` is called with two arguments: `tensor_a_val, tensor_b_val`
-  
+
   Finally, `fun` is invoked one last time, with `tensor_a_identity, tensor_b_identity`.
 
   An error will be raised unless `tensor_a` and `tensor_b` have the same dimensions.
@@ -693,15 +693,15 @@ defmodule Tensor do
   @doc """
   Elementwise multiplication.
 
-  - If both `a` and `b` are Tensors, the same as calling `mul_tensor/2`.
-  - If one of `a` or `b` is any kind of number, the same as calling `mul_number/2`.
+  - If both `a` and `b` are Tensors, the same as calling `mult_tensor/2`.
+  - If one of `a` or `b` is any kind of number, the same as calling `mult_number/2`.
   """
-  @spec mul(tensor , tensor) :: tensor
-  @spec mul(Numeric.t, tensor) :: tensor
-  @spec mul(tensor, Numeric.t) :: tensor
-  def mul(a = %Tensor{}, b = %Tensor{}), do: mul_tensor(a, b)
-  def mul(a = %Tensor{}, b), do: mul_number(a, b)
-  def mul(a, b = %Tensor{}), do: mul_number(a, b)
+  @spec mult(tensor , tensor) :: tensor
+  @spec mult(Numeric.t, tensor) :: tensor
+  @spec mult(tensor, Numeric.t) :: tensor
+  def mult(a = %Tensor{}, b = %Tensor{}), do: mult_tensor(a, b)
+  def mult(a = %Tensor{}, b), do: mult_number(a, b)
+  def mult(a, b = %Tensor{}), do: mult_number(a, b)
 
 
   @doc """
@@ -754,12 +754,12 @@ defmodule Tensor do
 
   If the Tensor is the second argument `b`, multiplies `a` with all elements of Tensor `b`.
   """
-  @spec mul_number(tensor, number) :: tensor
-  def mul_number(a = %Tensor{}, b) do
-    Tensor.map(a, &(Numbers.mul(&1, b)))
+  @spec mult_number(tensor, number) :: tensor
+  def mult_number(a = %Tensor{}, b) do
+    Tensor.map(a, &(Numbers.mult(&1, b)))
   end
-  def mul_number(a, b = %Tensor{}) do
-    Tensor.map(b, &(Numbers.mul(a, &1)))
+  def mult_number(a, b = %Tensor{}) do
+    Tensor.map(b, &(Numbers.mult(a, &1)))
   end
 
 
@@ -796,9 +796,9 @@ defmodule Tensor do
   @doc """
   Elementwise multiplication of the `tensor_a` with `tensor_b`.
   """
-  @spec mul_tensor(tensor, tensor) :: tensor
-  def mul_tensor(tensor_a = %Tensor{}, tensor_b = %Tensor{}) do
-    Tensor.merge(tensor_a, tensor_b, &(Numbers.mul(&1, &2)))
+  @spec mult_tensor(tensor, tensor) :: tensor
+  def mult_tensor(tensor_a = %Tensor{}, tensor_b = %Tensor{}) do
+    Tensor.merge(tensor_a, tensor_b, &(Numbers.mult(&1, &2)))
   end
 
   @doc """
@@ -826,9 +826,9 @@ defmodule Tensor do
 
 
   defimpl Enumerable do
-    
+
     def count(tensor), do: {:ok, Enum.reduce(tensor.dimensions, 1, &(&1 * &2))}
-  
+
     def member?(_tensor, _element), do: {:error, __MODULE__}
 
     def reduce(tensor, acc, fun) do
@@ -836,7 +836,7 @@ defmodule Tensor do
       |> Tensor.slices
       |> do_reduce(acc, fun)
     end
-  
+
     defp do_reduce(_,       {:halt, acc}, _fun),   do: {:halted, acc}
     defp do_reduce(list,    {:suspend, acc}, fun), do: {:suspended, acc, &do_reduce(list, &1, fun)}
     defp do_reduce([],      {:cont, acc}, _fun),   do: {:done, acc}
@@ -848,23 +848,23 @@ defmodule Tensor do
     def into(original ) do
       {original, fn
         # Building a higher-order tensor from lower-order tensors.
-        tensor = %Tensor{dimensions: [cur_dimension| lower_dimensions]}, 
-        {:cont, elem = %Tensor{dimensions: elem_dimensions}} 
-        when lower_dimensions == elem_dimensions -> 
+        tensor = %Tensor{dimensions: [cur_dimension| lower_dimensions]},
+        {:cont, elem = %Tensor{dimensions: elem_dimensions}}
+        when lower_dimensions == elem_dimensions ->
           new_dimensions = [cur_dimension+1| lower_dimensions]
           new_tensor = %Tensor{tensor | dimensions: new_dimensions, contents: tensor.contents}
           put_in new_tensor, [cur_dimension], elem
         # Inserting values directly into a Vector
-        tensor = %Tensor{dimensions: [length], identity: identity}, {:cont, elem} -> 
+        tensor = %Tensor{dimensions: [length], identity: identity}, {:cont, elem} ->
           new_length = length+1
-          new_contents = 
+          new_contents =
             if elem == identity do
               tensor.contents
             else
               put_in(tensor.contents, [length], elem)
             end
           %Tensor{tensor | dimensions: [new_length], contents: new_contents}
-        _, {:cont, elem} -> 
+        _, {:cont, elem} ->
           # Other operations not permitted
           raise Tensor.CollectableError, elem
         tensor,  :done -> tensor
@@ -873,4 +873,42 @@ defmodule Tensor do
     end
   end
 
+  defimpl Extractable do
+    def extract(tensor = %Tensor{dimensions: [0 | _lower_dimensions]}) do
+      {:error, :empty}
+    end
+    def extract(tensor = %Tensor{dimensions: [cur_dimension | lower_dimensions]}) do
+      new_dimension = cur_dimension - 1
+      highest_elem = tensor[new_dimension]
+      new_dimensions = [new_dimension | lower_dimensions]
+      new_contents = Map.delete(new_dimension, tensor.contents)
+      new_tensor = %Tensor{tensor | dimensions: new_dimensions, contents: new_contents}
+
+      {:ok, {highest_elem, new_tensor}}
+    end
+  end
+
+  defimpl Insertable do
+    # Vector
+    def insert(tensor = %Tensor{dimensions: [length], identity: identity}, item) do
+      new_length = length + 1
+      new_contents =
+        if item == identity do
+          tensor.contents
+        else
+          put_in(tensor.contents, [length], item)
+        end
+      %Tensor{tensor | dimensions: [new_length], contents: new_contents}
+    end
+    # Matrix, Tensor
+    def insert(tensor = %Tensor{dimensions: [cur_dimension | lower_dimensions]}, item = %Tensor{dimensions: [lower_dimensions]}) do
+      new_dimension = cur_dimension + 1
+      new_contents = put_in(tensor.contents, [cur_dimension], item.contents)
+      new_tensor = %Tensor{tensor | dimensions: [new_dimension | lower_dimensions], contents: new_contents}
+      {:ok, new_tensor}
+    end
+    def insert(tensor = %Tensor{}, item = _) do
+      {:error, :invalid_item_type}
+    end
+  end
 end

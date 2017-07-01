@@ -266,12 +266,12 @@ defmodule Matrix do
 
   defdelegate add(a, b), to: Tensor
   defdelegate sub(a, b), to: Tensor
-  defdelegate mul(a, b), to: Tensor
+  defdelegate mult(a, b), to: Tensor
   defdelegate div(a, b), to: Tensor
 
   defdelegate add_number(a, b), to: Tensor
   defdelegate sub_number(a, b), to: Tensor
-  defdelegate mul_number(a, b), to: Tensor
+  defdelegate mult_number(a, b), to: Tensor
   defdelegate div_number(a, b), to: Tensor
 
   @doc """
@@ -287,7 +287,7 @@ defmodule Matrix do
   @doc """
   Elementwise multiplication of `matrix_a` with `matrix_b`.
   """
-  defdelegate mul_matrix(matrix_a, matrix_b), to: Tensor, as: :mul_tensor
+  defdelegate mult_matrix(matrix_a, matrix_b), to: Tensor, as: :mult_tensor
 
   @doc """
   Elementwise division of `matrix_a` and `matrix_b`.

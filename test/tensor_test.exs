@@ -129,4 +129,53 @@ defmodule TensorTest do
     x = Vector.new([1,2,3,4])
     assert FunLand.Reducable.reduce(x, 0, fn x, acc -> acc + x end) == 10
   end
+
+  test "Tensor Access get" do
+    mat = Matrix.new([[1,0],[0,4]],2,2,0)
+    assert mat.contents == %{0 => %{0 => 1}, 1 => %{1 => 4}}
+    assert mat[0][0] == 1
+    assert mat[0][1] == 0
+  end
+
+  test "Tensor Access put_in non-identity" do
+    mat = Matrix.new([[1,0],[0,4]],2,2,0)
+    assert mat.contents == %{0 => %{0 => 1}, 1 => %{1 => 4}}
+    mat2 = put_in(mat[0][0], 6)
+    assert mat2.contents == %{0 => %{0 => 6}, 1 => %{1 => 4}}
+  end
+
+  test "Tensor Access put_in removes identity value" do
+    mat = Matrix.new([[1,0],[0,4]],2,2,0)
+    assert mat.contents == %{0 => %{0 => 1}, 1 => %{1 => 4}}
+    mat2 = put_in(mat[0][0], 0)
+    assert mat2.contents == %{0 => %{}, 1 => %{1 => 4}}
+  end
+
+  test "Tensor Access update_in non-identity" do
+    mat = Matrix.new([[1,0],[0,4]],2,2,0)
+    assert mat.contents == %{0 => %{0 => 1}, 1 => %{1 => 4}}
+    mat2 = update_in(mat[0][0], fn 1 -> 6; _ -> :bad end)
+    assert mat2.contents == %{0 => %{0 => 6}, 1 => %{1 => 4}}
+  end
+
+  test "Tensor Access update_in non-identity to nil" do
+    mat = Matrix.new([[1,0],[0,4]],2,2,0)
+    assert mat.contents == %{0 => %{0 => 1}, 1 => %{1 => 4}}
+    mat2 = update_in(mat[0][0], fn 1 -> nil; _ -> :bad end)
+    assert mat2.contents == %{0 => %{0 => nil}, 1 => %{1 => 4}}
+  end
+
+  test "Tensor Access update_in removes identity value" do
+    mat = Matrix.new([[1,0],[0,4]],2,2,0)
+    assert mat.contents == %{0 => %{0 => 1}, 1 => %{1 => 4}}
+    mat2 = update_in(mat[0][0], fn 1 -> 0; _ -> :bad end)
+    assert mat2.contents == %{0 => %{}, 1 => %{1 => 4}}
+  end
+
+  test "Tensor Access update_in updates identity value" do
+    mat = Matrix.new([[1,0],[0,4]],2,2,0)
+    assert mat.contents == %{0 => %{0 => 1}, 1 => %{1 => 4}}
+    mat2 = update_in(mat[0][1], fn 0 -> 6; _ -> :bad end)
+    assert mat2.contents == %{0 => %{0 => 1, 1 => 6}, 1 => %{1 => 4}}
+  end
 end

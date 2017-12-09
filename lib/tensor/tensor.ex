@@ -212,13 +212,13 @@ defmodule Tensor.Tensor do
     end
     {result, contents} =
       if vector? tensor do
-        {_result, _contents} = Map.get_and_update(tensor.contents, key, fn current_value ->
-          case fun.(current_value) do
-            {^current_value, ^identity} -> :pop
-            other_result -> other_result
-          end
+        current_value = Map.get(tensor.contents, key, identity)
+        case fun.(current_value) do
+          :pop -> {current_value, Map.delete(tensor.contents, key)}
+          {get, ^identity} -> {get, Map.delete(tensor.contents, key)}
+          {get, update} -> {get, Map.put(tensor.contents, key, update)}
+          other -> raise "the given function must return a two-element tuple or :pop, got: #{inspect(other)}"
         end
-        )
       else
         {:ok, ll_tensor} = fetch(tensor, key)
         {result, ll_tensor2} = fun.(ll_tensor)

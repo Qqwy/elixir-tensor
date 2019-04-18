@@ -308,6 +308,7 @@ The package can be installed by adding `tensor` to your list of dependencies in 
 
 ## Changelog
 
+- 2.0.1 - Make `FunLand` an optional dependency.
 - 2.0.0 - Many changes, including Backwards incompatible ones:
   - Increase version number of `Numbers`. Backwards-incompatible change, as `mult` is now used instead of `mul` for multiplication. 
   - Moving `Tensor`, `Vector` and `Matrix` all under the `Tensor` namespace (so they now are `Tensor.Tensor`, `Tensor.Vector`, `Tensor.Matrix`), to follow the HexPM rules of library management (which is, only use one single top-level module name). Write `use Tensor` to alias the modules in your code.

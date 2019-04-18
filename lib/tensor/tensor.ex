@@ -304,7 +304,10 @@ defmodule Tensor.Tensor do
     }
   end
 
-  use FunLand.Mappable
+  if Code.ensure_loaded?(FunLand.Mappable) do
+    use FunLand.Mappable
+  end
+
   @doc """
   Maps `fun` over all values in the Tensor.
 
@@ -844,7 +847,9 @@ defmodule Tensor.Tensor do
     defp do_reduce([h | t], {:cont, acc}, fun),    do: do_reduce(t, fun.(h, acc), fun)
   end
 
-  use FunLand.Reducable
+  if Code.ensure_loaded?(FunLand.Reducable) do
+    use FunLand.Reducable
+  end
   def reduce(tensor, acc, fun) do
     case Extractable.extract(tensor) do
       {:error, :empty} -> acc

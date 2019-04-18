@@ -3,7 +3,7 @@ defmodule Tensor.Mixfile do
 
   def project do
     [app: :tensor,
-     version: "2.0.0",
+     version: "2.0.1",
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -39,7 +39,7 @@ defmodule Tensor.Mixfile do
       {:ex_doc, ">= 0.14.0", only: :dev},
 
       {:numbers, "~> 4.0"},
-      {:fun_land, "~> 0.9.0"},
+      {:fun_land, "~> 0.9.0", optional: true},
       {:extractable, "~> 0.2.0"},
       {:insertable, "~> 0.2.0"},
     ]

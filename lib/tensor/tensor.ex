@@ -845,10 +845,14 @@ defmodule Tensor.Tensor do
     defp do_reduce(list,    {:suspend, acc}, fun), do: {:suspended, acc, &do_reduce(list, &1, fun)}
     defp do_reduce([],      {:cont, acc}, _fun),   do: {:done, acc}
     defp do_reduce([h | t], {:cont, acc}, fun),    do: do_reduce(t, fun.(h, acc), fun)
+
+    def slice(_tensor) do
+      {:error, __MODULE__}
+    end
   end
 
   if Code.ensure_loaded?(FunLand.Reducable) do
-    use FunLand.Reducable
+    use FunLand.Reducable, auto_enumerable: false
   end
   def reduce(tensor, acc, fun) do
     case Extractable.extract(tensor) do

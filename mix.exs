@@ -3,7 +3,7 @@ defmodule Tensor.Mixfile do
 
   def project do
     [app: :tensor,
-     version: "2.1.1",
+     version: "2.1.2",
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,

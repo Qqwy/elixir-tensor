@@ -308,6 +308,7 @@ The package can be installed by adding `tensor` to your list of dependencies in 
 
 ## Changelog
 
+- 2.0.2 - Bugfix w.r.t. optional dependency `FunLand`.
 - 2.0.1 - Make `FunLand` an optional dependency.
 - 2.0.0 - Many changes, including Backwards incompatible ones:
   - Increase version number of `Numbers`. Backwards-incompatible change, as `mult` is now used instead of `mul` for multiplication. 

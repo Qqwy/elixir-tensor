@@ -304,8 +304,13 @@ defmodule Tensor.Tensor do
     }
   end
 
-  if Code.ensure_loaded?(FunLand.Mappable) do
-    use FunLand.Mappable
+  IO.inspect("FunLand loaded: #{Code.ensure_loaded?(FunLand)}")
+
+  if Code.ensure_loaded?(FunLand) do
+    Code.eval_quoted(
+    quote do
+      use FunLand.Mappable
+    end)
   end
 
   @doc """
@@ -851,8 +856,11 @@ defmodule Tensor.Tensor do
     end
   end
 
-  if Code.ensure_loaded?(FunLand.Reducable) do
-    use FunLand.Reducable, auto_enumerable: false
+  if Code.ensure_loaded?(FunLand) do
+    Code.eval_quoted(
+    quote do
+      use FunLand.Reducable, auto_enumerable: false
+    end)
   end
   def reduce(tensor, acc, fun) do
     case Extractable.extract(tensor) do

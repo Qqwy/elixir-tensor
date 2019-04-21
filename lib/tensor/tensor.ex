@@ -1,6 +1,8 @@
 defmodule Tensor.Tensor do
   alias Tensor.Tensor.Helper
   alias Tensor.{Vector, Matrix, Tensor}
+  require Helper
+  import Helper, only: [use_if_exists?: 2]
 
   defstruct [:identity, contents: %{}, dimensions: [1]]
 
@@ -306,12 +308,15 @@ defmodule Tensor.Tensor do
 
   IO.inspect("FunLand loaded: #{Code.ensure_loaded?(FunLand)}")
 
-  if Code.ensure_loaded?(FunLand) do
-    Code.eval_quoted(
-    quote do
-      use FunLand.Mappable
-    end)
-  end
+
+  # if Code.ensure_loaded?(FunLand) do
+  #   Code.eval_quoted(
+  #   quote do
+  #   apply(Kernel, :use,  [FunLand.Mappable])
+  #   end, __ENV__)
+  # end
+
+  use_if_exists?(FunLand.Mappable, [])
 
   @doc """
   Maps `fun` over all values in the Tensor.
@@ -856,12 +861,14 @@ defmodule Tensor.Tensor do
     end
   end
 
-  if Code.ensure_loaded?(FunLand) do
-    Code.eval_quoted(
-    quote do
-      use FunLand.Reducable, auto_enumerable: false
-    end)
-  end
+
+  # if Code.ensure_loaded?(FunLand) do
+  #   Code.eval_quoted(
+  #   quote do
+  #     apply(Kernel, :use, [FunLand.Reducable, auto_enumerable: false])
+  #   end, __ENV__)
+  # end
+  use_if_exists?(FunLand.Reducable, auto_enumerable: false)
   def reduce(tensor, acc, fun) do
     case Extractable.extract(tensor) do
       {:error, :empty} -> acc

@@ -88,5 +88,15 @@ defmodule Tensor.Tensor.Helper do
     map_difference(map_a, diff)
   end
 
+  @doc false
+  defmacro use_if_exists?(module, opts) do
+    module = Macro.expand(module, __ENV__)
+    if Code.ensure_loaded?(module) do
+      quote do
+        use unquote(module), unquote(opts)
+      end
+    end
+  end
+
 end
 

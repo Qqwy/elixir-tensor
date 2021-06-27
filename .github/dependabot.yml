@@ -1,0 +1,19 @@
+version: 2
+updates:
+- package-ecosystem: mix
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: ex_doc
+    versions:
+    - 0.23.0
+    - 0.24.0
+    - 0.24.1
+  - dependency-name: numbers
+    versions:
+    - 5.2.3
+  - dependency-name: dialyxir
+    versions:
+    - 1.0.0

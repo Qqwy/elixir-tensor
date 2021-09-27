@@ -39,7 +39,7 @@ defmodule Tensor.Mixfile do
       {:ex_doc, ">= 0.14.0", only: :dev},
 
       {:numbers, "~> 5.0"},
-      {:fun_land, "~> 0.9.0", optional: true},
+      {:fun_land, "~> 0.10.0", optional: true},
       {:extractable, "~> 0.2.0"},
       {:insertable, "~> 0.2.0"},
     ]

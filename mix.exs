@@ -35,7 +35,7 @@ defmodule Tensor.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:dialyxir, "~> 0.4", only: :dev},
+      {:dialyxir, "~> 1.1", only: :dev},
       {:ex_doc, ">= 0.14.0", only: :dev},
 
       {:numbers, "~> 5.0"},

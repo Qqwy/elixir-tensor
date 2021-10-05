@@ -41,7 +41,7 @@ defmodule Tensor.Mixfile do
       {:numbers, "~> 5.0"},
       {:fun_land, "~> 0.10.0", optional: true},
       {:extractable, "~> 0.2.0"},
-      {:insertable, "~> 0.2.0"},
+      {:insertable, "~> 1.0.0"},
     ]
   end
 
